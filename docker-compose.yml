@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: kikiwiki-postgres
+    environment:
+      POSTGRES_DB: kikiwiki
+      POSTGRES_USER: kikiwiki
+      POSTGRES_PASSWORD: kikiwiki
+    ports:
+      - "5432:5432"
+    volumes:
+      - kikiwiki-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  kikiwiki-postgres-data:
