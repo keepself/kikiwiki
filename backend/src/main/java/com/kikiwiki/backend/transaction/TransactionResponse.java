@@ -9,7 +9,8 @@ public class TransactionResponse {
     private Long id;
     private BigDecimal amount;
     private TransactionType type;
-    private String category;
+    private Long categoryId;
+    private String categoryName;
     private String description;
     private LocalDate transactionDate;
     private LocalDateTime createdAt;
@@ -18,7 +19,8 @@ public class TransactionResponse {
         this.id = transaction.getId();
         this.amount = transaction.getAmount();
         this.type = transaction.getType();
-        this.category = transaction.getCategory();
+        this.categoryId = transaction.getCategory().getId();
+        this.categoryName = transaction.getCategory().getName();
         this.description = transaction.getDescription();
         this.transactionDate = transaction.getTransactionDate();
         this.createdAt = transaction.getCreatedAt();
@@ -36,8 +38,12 @@ public class TransactionResponse {
         return type;
     }
 
-    public String getCategory() {
-        return category;
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
     }
 
     public String getDescription() {

@@ -2,7 +2,16 @@ package com.kikiwiki.backend.transaction;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-// JpaRepository를 상속하면 save(), findAll(), findById() 등이 자동으로 구현됨
-// <Transaction, Long> = 다룰 엔티티 타입, 그 엔티티의 id 타입
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
+
+    List<Transaction> findAllByDeletedAtIsNull();
+
+    Optional<Transaction> findByIdAndDeletedAtIsNull(Long id);
+
+    // 특정 기간(월의 시작일~마지막일) 안에 있는, 삭제되지 않은 거래만 조회
+    List<Transaction> findAllByDeletedAtIsNullAndTransactionDateBetween(LocalDate start, LocalDate end);
 }

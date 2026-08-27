@@ -7,11 +7,10 @@ public class TransactionRequest {
 
     private BigDecimal amount;
     private TransactionType type;
-    private String category;
+    private Long categoryId;
     private String description;
     private LocalDate transactionDate;
 
-    // JSON을 이 객체로 변환(역직렬화)할 때 필요
     public TransactionRequest() {
     }
 
@@ -31,12 +30,12 @@ public class TransactionRequest {
         this.type = type;
     }
 
-    public String getCategory() {
-        return category;
+    public Long getCategoryId() {
+        return categoryId;
     }
 
-    public void setCategory(String category) {
-        this.category = category;
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
     }
 
     public String getDescription() {
