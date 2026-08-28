@@ -11,48 +11,43 @@ export function MonthSelector({ month, onChange }: Props) {
   const [year, setYear] = useState(selectedYear);
   const [activeMonths, setActiveMonths] = useState<Set<string>>(new Set());
 
-  // 부모가 month를 외부에서 바꾸면 (예: 등록 후 다른 연도로 자동 이동) 그리드가 보여주는 연도도 따라감
   useEffect(() => {
     setYear(selectedYear);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [month]);
 
-  // 연도가 바뀔 때마다, 그 연도에 데이터가 있는 달 목록을 다시 불러옴
   useEffect(() => {
     fetchActiveMonths(year).then((months) => setActiveMonths(new Set(months)));
   }, [year]);
 
   const selectMonth = (m: number) => {
-    const monthStr = `${year}-${String(m).padStart(2, '0')}`;
-    onChange(monthStr);
+    onChange(`${year}-${String(m).padStart(2, '0')}`);
   };
 
   return (
-    <div style={{ marginBottom: '1.5rem' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
-        <button onClick={() => setYear((y) => y - 1)}>◀</button>
-        <strong>{year}년</strong>
-        <button onClick={() => setYear((y) => y + 1)}>▶</button>
+    <div className="month-selector">
+      <div className="month-selector__year">
+        <button className="icon-button" onClick={() => setYear((y) => y - 1)} aria-label="이전 연도">
+          ‹
+        </button>
+        <span className="month-selector__year-label">{year}년</span>
+        <button className="icon-button" onClick={() => setYear((y) => y + 1)} aria-label="다음 연도">
+          ›
+        </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 48px)', gap: '0.4rem' }}>
+      <div className="month-grid">
         {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => {
           const monthStr = `${year}-${String(m).padStart(2, '0')}`;
           const isSelected = year === selectedYear && m === selectedMonthNum;
           const hasData = activeMonths.has(monthStr);
 
+          const classes = ['month-cell'];
+          if (isSelected) classes.push('month-cell--selected');
+          if (hasData) classes.push('month-cell--has-data');
+
           return (
-            <button
-              key={m}
-              onClick={() => selectMonth(m)}
-              style={{
-                padding: '0.5rem 0',
-                border: isSelected ? '2px solid seagreen' : '1px solid #ddd',
-                background: hasData ? '#eaf6ee' : 'white',
-                fontWeight: isSelected ? 'bold' : 'normal',
-                cursor: 'pointer',
-              }}
-            >
+            <button key={m} className={classes.join(' ')} onClick={() => selectMonth(m)}>
               {m}월
             </button>
           );

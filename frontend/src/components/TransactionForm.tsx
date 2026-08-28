@@ -19,7 +19,6 @@ export function TransactionForm({ onSubmit }: Props) {
   const [transactionDate, setTransactionDate] = useState(today());
   const [submitting, setSubmitting] = useState(false);
 
-  // 구분(수입/지출)이 바뀔 때마다 해당하는 카테고리 목록을 다시 불러옴
   useEffect(() => {
     fetchCategories(type).then((list) => {
       setCategories(list);
@@ -53,27 +52,39 @@ export function TransactionForm({ onSubmit }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxWidth: '320px' }}>
-      <label>
-        금액
+    <form className="transaction-form" onSubmit={handleSubmit}>
+      <div className="form-field">
+        <label>구분</label>
+        <div className="type-toggle">
+          <button
+            type="button"
+            className={`type-expense ${type === 'EXPENSE' ? 'active' : ''}`}
+            onClick={() => setType('EXPENSE')}
+          >
+            지출
+          </button>
+          <button
+            type="button"
+            className={`type-income ${type === 'INCOME' ? 'active' : ''}`}
+            onClick={() => setType('INCOME')}
+          >
+            수입
+          </button>
+        </div>
+      </div>
+
+      <div className="form-field">
+        <label>금액</label>
         <input
           type="number"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           placeholder="15000"
         />
-      </label>
+      </div>
 
-      <label>
-        구분
-        <select value={type} onChange={(e) => setType(e.target.value as TransactionType)}>
-          <option value="EXPENSE">지출</option>
-          <option value="INCOME">수입</option>
-        </select>
-      </label>
-
-      <label>
-        카테고리
+      <div className="form-field">
+        <label>카테고리</label>
         <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>
@@ -81,29 +92,29 @@ export function TransactionForm({ onSubmit }: Props) {
             </option>
           ))}
         </select>
-      </label>
+      </div>
 
-      <label>
-        메모
+      <div className="form-field">
+        <label>메모</label>
         <input
           type="text"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="선택 입력"
         />
-      </label>
+      </div>
 
-      <label>
-        날짜
+      <div className="form-field">
+        <label>날짜</label>
         <input
           type="date"
           value={transactionDate}
           onChange={(e) => setTransactionDate(e.target.value)}
         />
-      </label>
+      </div>
 
-      <button type="submit" disabled={submitting}>
-        {submitting ? '등록 중...' : '등록'}
+      <button type="submit" className="submit-button" disabled={submitting}>
+        {submitting ? '등록 중...' : '등록하기'}
       </button>
     </form>
   );

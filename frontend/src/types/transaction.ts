@@ -24,3 +24,9 @@ export interface TransactionInput {
   description: string;
   transactionDate: string;
 }
+
+export interface TransactionPage {
+  items: Transaction[];
+  hasMore: boolean;
+  totalCount: number;
+}

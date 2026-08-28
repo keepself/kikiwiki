@@ -4,15 +4,21 @@ import { fetchCategories } from '../api/client';
 
 interface Props {
   transactions: Transaction[];
+  hasMore: boolean;
+  onLoadMore: () => void;
   onUpdate: (id: number, input: TransactionInput) => Promise<void>;
   onDelete: (id: number) => Promise<void>;
 }
 
-export function TransactionList({ transactions, onUpdate, onDelete }: Props) {
+export function TransactionList({ transactions, hasMore, onLoadMore, onUpdate, onDelete }: Props) {
   const [editingId, setEditingId] = useState<number | null>(null);
 
   if (transactions.length === 0) {
-    return <p>등록된 거래가 없습니다.</p>;
+    return (
+      <div className="transaction-list">
+        <div className="empty-state">조건에 맞는 거래가 없어요.</div>
+      </div>
+    );
   }
 
   const handleDelete = async (id: number) => {
@@ -22,48 +28,58 @@ export function TransactionList({ transactions, onUpdate, onDelete }: Props) {
   };
 
   return (
-    <table style={{ borderCollapse: 'collapse', width: '100%', maxWidth: '700px' }}>
-      <thead>
-        <tr>
-          <th style={cellStyle}>날짜</th>
-          <th style={cellStyle}>구분</th>
-          <th style={cellStyle}>카테고리</th>
-          <th style={cellStyle}>금액</th>
-          <th style={cellStyle}>메모</th>
-          <th style={cellStyle}></th>
-        </tr>
-      </thead>
-      <tbody>
-        {transactions.map((t) =>
-          editingId === t.id ? (
-            <EditRow
-              key={t.id}
-              transaction={t}
-              onSave={async (input) => {
-                await onUpdate(t.id, input);
-                setEditingId(null);
-              }}
-              onCancel={() => setEditingId(null)}
-            />
-          ) : (
-            <tr key={t.id}>
-              <td style={cellStyle}>{t.transactionDate}</td>
-              <td style={cellStyle}>{t.type === 'EXPENSE' ? '지출' : '수입'}</td>
-              <td style={cellStyle}>{t.categoryName}</td>
-              <td style={{ ...cellStyle, color: t.type === 'EXPENSE' ? 'crimson' : 'seagreen' }}>
-                {t.type === 'EXPENSE' ? '-' : '+'}
-                {t.amount.toLocaleString()}원
-              </td>
-              <td style={cellStyle}>{t.description}</td>
-              <td style={cellStyle}>
-                <button onClick={() => setEditingId(t.id)}>수정</button>
-                <button onClick={() => handleDelete(t.id)}>삭제</button>
-              </td>
-            </tr>
-          )
-        )}
-      </tbody>
-    </table>
+    <div className="transaction-list">
+      {transactions.map((t) =>
+        editingId === t.id ? (
+          <EditRow
+            key={t.id}
+            transaction={t}
+            onSave={async (input) => {
+              await onUpdate(t.id, input);
+              setEditingId(null);
+            }}
+            onCancel={() => setEditingId(null)}
+          />
+        ) : (
+          <div className="transaction-row" key={t.id}>
+            <span
+              className={`transaction-row__category-badge transaction-row__category-badge--${t.type.toLowerCase()}`}
+            >
+              {t.categoryName}
+            </span>
+
+            <div className="transaction-row__info">
+              {t.description && <div className="transaction-row__description">{t.description}</div>}
+              <div className="transaction-row__date">{t.transactionDate}</div>
+            </div>
+
+            <div
+              className={`transaction-row__amount tabular-nums ${
+                t.type === 'EXPENSE' ? 'text-expense' : 'text-income'
+              }`}
+            >
+              {t.type === 'EXPENSE' ? '-' : '+'}
+              {t.amount.toLocaleString()}원
+            </div>
+
+            <div className="transaction-row__actions">
+              <button className="text-button" onClick={() => setEditingId(t.id)}>
+                수정
+              </button>
+              <button className="text-button" onClick={() => handleDelete(t.id)}>
+                삭제
+              </button>
+            </div>
+          </div>
+        )
+      )}
+
+      {hasMore && (
+        <button className="load-more-button" onClick={onLoadMore}>
+          더보기
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -81,11 +97,9 @@ function EditRow({ transaction, onSave, onCancel }: EditRowProps) {
   const [description, setDescription] = useState(transaction.description ?? '');
   const [transactionDate, setTransactionDate] = useState(transaction.transactionDate);
 
-  // 구분이 바뀔 때마다 카테고리 목록 갱신 (처음엔 기존 카테고리를 유지)
   useEffect(() => {
     fetchCategories(type).then((list) => {
       setCategories(list);
-      // 현재 선택된 카테고리가 새 목록에 없으면 (구분을 바꾼 경우) 첫 번째로 초기화
       if (!list.some((c) => c.id === Number(categoryId))) {
         setCategoryId(list.length > 0 ? String(list[0].id) : '');
       }
@@ -104,41 +118,27 @@ function EditRow({ transaction, onSave, onCancel }: EditRowProps) {
   };
 
   return (
-    <tr>
-      <td style={cellStyle}>
-        <input type="date" value={transactionDate} onChange={(e) => setTransactionDate(e.target.value)} />
-      </td>
-      <td style={cellStyle}>
-        <select value={type} onChange={(e) => setType(e.target.value as TransactionType)}>
-          <option value="EXPENSE">지출</option>
-          <option value="INCOME">수입</option>
-        </select>
-      </td>
-      <td style={cellStyle}>
-        <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-      </td>
-      <td style={cellStyle}>
-        <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />
-      </td>
-      <td style={cellStyle}>
-        <input value={description} onChange={(e) => setDescription(e.target.value)} />
-      </td>
-      <td style={cellStyle}>
-        <button onClick={handleSave}>저장</button>
-        <button onClick={onCancel}>취소</button>
-      </td>
-    </tr>
+    <div className="edit-row">
+      <input type="date" value={transactionDate} onChange={(e) => setTransactionDate(e.target.value)} />
+      <select value={type} onChange={(e) => setType(e.target.value as TransactionType)}>
+        <option value="EXPENSE">지출</option>
+        <option value="INCOME">수입</option>
+      </select>
+      <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+        {categories.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.name}
+          </option>
+        ))}
+      </select>
+      <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} style={{ width: '90px' }} />
+      <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="메모" />
+      <button className="text-button" onClick={handleSave}>
+        저장
+      </button>
+      <button className="text-button" onClick={onCancel}>
+        취소
+      </button>
+    </div>
   );
 }
-
-const cellStyle: React.CSSProperties = {
-  border: '1px solid #ddd',
-  padding: '0.5rem',
-  textAlign: 'left',
-};

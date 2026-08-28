@@ -3,6 +3,8 @@ package com.kikiwiki.backend.transaction;
 import com.kikiwiki.backend.category.Category;
 import com.kikiwiki.backend.category.CategoryRepository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,7 +13,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeParseException;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -50,35 +51,49 @@ public class TransactionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(new TransactionResponse(saved));
     }
 
-    // month가 없으면 전체 조회, 있으면 (예: "2026-08") 해당 월만 조회
+    // month: 필수 (예: "2026-08"). type, categoryId: 선택 필터. page/size: 페이징 (기본 0페이지, 10개씩)
     @GetMapping
-    public List<TransactionResponse> getAll(@RequestParam(value = "month", required = false) String month) {
-        List<Transaction> transactions;
+    public TransactionPageResponse getAll(
+            @RequestParam("month") String month,
+            @RequestParam(value = "type", required = false) TransactionType type,
+            @RequestParam(value = "categoryId", required = false) Long categoryId,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size
+    ) {
+        YearMonth yearMonth = parseYearMonthOrThrow(month);
+        LocalDate start = yearMonth.atDay(1);
+        LocalDate end = yearMonth.atEndOfMonth();
 
-        if (month == null || month.isBlank()) {
-            transactions = transactionRepository.findAllByDeletedAtIsNull();
-        } else {
-            YearMonth yearMonth = parseYearMonthOrThrow(month);
-            LocalDate start = yearMonth.atDay(1);
-            LocalDate end = yearMonth.atEndOfMonth();
-            transactions = transactionRepository.findAllByDeletedAtIsNullAndTransactionDateBetween(start, end);
-        }
+        Page<Transaction> result = transactionRepository.search(
+                start, end, type, categoryId, PageRequest.of(page, size)
+        );
 
-        return transactions.stream()
-                .map(TransactionResponse::new)
-                .toList();
+        var items = result.getContent().stream().map(TransactionResponse::new).toList();
+
+        return new TransactionPageResponse(items, result.hasNext(), result.getTotalElements());
     }
 
     private YearMonth parseYearMonthOrThrow(String month) {
         try {
-            return YearMonth.parse(month); // "yyyy-MM" 형식 기대
+            return YearMonth.parse(month);
         } catch (DateTimeParseException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "month 형식이 올바르지 않습니다 (예: 2026-08): " + month);
         }
     }
 
-    // 특정 연도에 거래가 존재하는 월들을 반환 (예: ["2026-01", "2026-03", "2026-08"])
-    // 프론트의 월 선택 그리드에서 데이터가 있는 달을 강조 표시하는 데 사용
+    // 특정 월의 카테고리별 지출(또는 수입) 합계. 기본값은 지출(EXPENSE)
+    @GetMapping("/category-summary")
+    public java.util.List<CategorySummaryResponse> getCategorySummary(
+            @RequestParam("month") String month,
+            @RequestParam(value = "type", defaultValue = "EXPENSE") TransactionType type
+    ) {
+        YearMonth yearMonth = parseYearMonthOrThrow(month);
+        LocalDate start = yearMonth.atDay(1);
+        LocalDate end = yearMonth.atEndOfMonth();
+
+        return transactionRepository.summarizeByCategory(start, end, type);
+    }
+
     @GetMapping("/active-months")
     public Set<String> getActiveMonths(@RequestParam("year") int year) {
         LocalDate start = LocalDate.of(year, 1, 1);
