@@ -7,6 +7,8 @@ import { TransactionFilter } from './components/TransactionFilter';
 import { MonthSelector } from './components/MonthSelector';
 import { SummaryCard } from './components/SummaryCard';
 import { CategoryBarChart } from './components/CategoryBarChart';
+import { LoginPage } from './components/LoginPage';
+import { getToken, clearToken } from './auth';
 import './App.css';
 
 const PAGE_SIZE = 10;
@@ -21,6 +23,7 @@ function monthOf(dateString: string): string {
 }
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(!!getToken());
   const [month, setMonth] = useState(currentMonth());
   const [filterType, setFilterType] = useState<TransactionType | null>(null);
   const [filterCategoryId, setFilterCategoryId] = useState<number | null>(null);
@@ -112,10 +115,20 @@ function App() {
     }
   };
 
+  const handleLogout = () => {
+    clearToken();
+    setIsLoggedIn(false);
+  };
+
+  if (!isLoggedIn) {
+    return <LoginPage onLoginSuccess={() => setIsLoggedIn(true)} />;
+  }
+
   return (
     <div className="app">
       <header className="app-header">
         <h1>kikiwiki 가계부</h1>
+        <button className="text-button" onClick={handleLogout}>로그아웃</button>
       </header>
 
       {error && <div className="error-banner">{error}</div>}

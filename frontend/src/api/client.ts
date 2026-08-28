@@ -1,6 +1,45 @@
 import type { Category, Transaction, TransactionInput, TransactionPage, TransactionType } from '../types/transaction';
+import { getToken, clearToken } from '../auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+// 모든 API 호출이 거치는 공통 래퍼: 토큰을 자동으로 헤더에 싣고, 401/403이면 로그인 화면으로 보냄
+async function authorizedFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  const token = getToken();
+
+  const headers = new Headers(options.headers);
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+
+  const response = await fetch(url, { ...options, headers });
+
+  if (response.status === 401 || response.status === 403) {
+    clearToken();
+    window.location.reload(); // 로그인 화면으로 돌아가게 함
+    throw new Error('로그인이 필요합니다.');
+  }
+
+  return response;
+}
+
+export interface LoginResult {
+  token: string;
+}
+
+export async function login(username: string, password: string): Promise<LoginResult> {
+  const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  });
+
+  if (!response.ok) {
+    throw new Error('아이디 또는 비밀번호가 올바르지 않습니다.');
+  }
+
+  return response.json();
+}
 
 export interface FetchTransactionsParams {
   month: string;
@@ -18,7 +57,7 @@ export async function fetchTransactions(params: FetchTransactionsParams): Promis
   query.set('page', String(params.page ?? 0));
   query.set('size', String(params.size ?? 10));
 
-  const response = await fetch(`${API_BASE_URL}/api/transactions?${query}`);
+  const response = await authorizedFetch(`${API_BASE_URL}/api/transactions?${query}`);
 
   if (!response.ok) {
     throw new Error(`거래 목록 조회 실패: ${response.status}`);
@@ -28,7 +67,7 @@ export async function fetchTransactions(params: FetchTransactionsParams): Promis
 }
 
 export async function createTransaction(input: TransactionInput): Promise<Transaction> {
-  const response = await fetch(`${API_BASE_URL}/api/transactions`, {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/transactions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
@@ -42,7 +81,7 @@ export async function createTransaction(input: TransactionInput): Promise<Transa
 }
 
 export async function updateTransaction(id: number, input: TransactionInput): Promise<Transaction> {
-  const response = await fetch(`${API_BASE_URL}/api/transactions/${id}`, {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/transactions/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
@@ -56,7 +95,7 @@ export async function updateTransaction(id: number, input: TransactionInput): Pr
 }
 
 export async function deleteTransaction(id: number): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/api/transactions/${id}`, {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/transactions/${id}`, {
     method: 'DELETE',
   });
 
@@ -70,7 +109,7 @@ export async function fetchCategories(type?: TransactionType): Promise<Category[
     ? `${API_BASE_URL}/api/categories?type=${type}`
     : `${API_BASE_URL}/api/categories`;
 
-  const response = await fetch(url);
+  const response = await authorizedFetch(url);
 
   if (!response.ok) {
     throw new Error(`카테고리 조회 실패: ${response.status}`);
@@ -80,7 +119,7 @@ export async function fetchCategories(type?: TransactionType): Promise<Category[
 }
 
 export async function fetchActiveMonths(year: number): Promise<string[]> {
-  const response = await fetch(`${API_BASE_URL}/api/transactions/active-months?year=${year}`);
+  const response = await authorizedFetch(`${API_BASE_URL}/api/transactions/active-months?year=${year}`);
 
   if (!response.ok) {
     throw new Error(`활성 월 조회 실패: ${response.status}`);
@@ -96,7 +135,7 @@ export interface CategorySummary {
 }
 
 export async function fetchCategorySummary(month: string, type: TransactionType): Promise<CategorySummary[]> {
-  const response = await fetch(`${API_BASE_URL}/api/transactions/category-summary?month=${month}&type=${type}`);
+  const response = await authorizedFetch(`${API_BASE_URL}/api/transactions/category-summary?month=${month}&type=${type}`);
 
   if (!response.ok) {
     throw new Error(`카테고리별 요약 조회 실패: ${response.status}`);

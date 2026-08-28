@@ -492,3 +492,48 @@
   color: var(--color-text);
   white-space: nowrap;
 }
+
+/* ---- Login Page ---- */
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.login-form {
+  background: var(--color-bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 2rem 1.75rem;
+  width: 100%;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.login-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  text-align: center;
+  color: var(--color-accent-strong);
+}
+
+.login-subtitle {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  text-align: center;
+  margin: -0.5rem 0 0.5rem;
+}
+
+/* ---- Header layout update ---- */
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
