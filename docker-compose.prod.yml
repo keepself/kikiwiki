@@ -17,8 +17,7 @@ services:
       retries: 10
 
   backend:
-    build:
-      context: ./backend
+    image: kikiwiki-backend:latest
     container_name: kikiwiki-backend
     restart: unless-stopped
     depends_on:
