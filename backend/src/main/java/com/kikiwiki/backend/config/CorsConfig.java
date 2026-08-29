@@ -1,5 +1,6 @@
 package com.kikiwiki.backend.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -7,11 +8,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
+    // 배포 환경(CORS_ALLOWED_ORIGINS)에서는 실제 프론트 도메인으로 주입, 로컬은 기존 패턴 그대로 사용
+    @Value("${app.cors.allowed-origin-patterns:http://localhost:517*}")
+    private String allowedOriginPatterns;
+
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                // Vite 개발 서버는 포트가 이미 쓰이면 자동으로 다음 번호로 옮겨감 (5173, 5174, 5175...)
-                .allowedOriginPatterns("http://localhost:517*")
+                .allowedOriginPatterns(allowedOriginPatterns.split(","))
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);

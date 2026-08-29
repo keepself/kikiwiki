@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+app:
+  admin:
+    username: ${ADMIN_USERNAME}
+    password: ${ADMIN_PASSWORD}   # 서버 시작 시 즉시 암호화되어 DB에 저장됨. 최초 1회만 쓰이고 이후엔 DB 값 사용
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration-ms: 1209600000   # 14일 (밀리초)
+  cors:
+    allowed-origin-patterns: ${CORS_ALLOWED_ORIGINS}
