@@ -9,15 +9,18 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final CorsConfigurationSource corsConfigurationSource;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter, CorsConfigurationSource corsConfigurationSource) {
         this.jwtAuthFilter = jwtAuthFilter;
+        this.corsConfigurationSource = corsConfigurationSource;
     }
 
     @Bean
@@ -28,8 +31,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // CORS 설정(CorsConfig)을 Spring Security가 인식하도록 연결
-                .cors(cors -> {})
+                // CorsConfig의 설정을 Security 필터 단에도 명시적으로 연결 (401/403 응답에도 CORS 헤더가 붙도록)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 // JWT를 쓰므로 세션 기반 CSRF 보호는 필요 없음
                 .csrf(csrf -> csrf.disable())
                 // 서버가 세션을 만들지 않도록 함 (매 요청을 토큰으로만 인증)
