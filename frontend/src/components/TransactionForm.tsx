@@ -79,7 +79,7 @@ export function TransactionForm({ onSubmit }: Props) {
           type="number"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-          placeholder="15000"
+          placeholder="0"
         />
       </div>
 
