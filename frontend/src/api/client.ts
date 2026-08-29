@@ -15,8 +15,13 @@ async function authorizedFetch(url: string, options: RequestInit = {}): Promise<
   const response = await fetch(url, { ...options, headers });
 
   if (response.status === 401 || response.status === 403) {
+    console.error('인증 실패 응답 받음:', url, response.status);
     clearToken();
-    window.location.reload(); // 로그인 화면으로 돌아가게 함
+    // 새로고침을 한 번만 하도록 방지 (원인 불명 401/403이 반복되면 무한 새로고침에 빠지는 걸 막음)
+    if (!sessionStorage.getItem('kikiwiki_auth_reload_guard')) {
+      sessionStorage.setItem('kikiwiki_auth_reload_guard', '1');
+      window.location.reload(); // 로그인 화면으로 돌아가게 함
+    }
     throw new Error('로그인이 필요합니다.');
   }
 
