@@ -42,6 +42,10 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         // 로그인 API는 누구나 접근 가능해야 함 (로그인하기 전이니까)
                         .requestMatchers("/api/auth/login").permitAll()
+                        // 컨트롤러에서 ResponseStatusException(401/404/502 등)을 던지면 스프링이 내부적으로
+                        // /error로 재요청(forward)하는데, 이때는 JwtAuthFilter가 기본적으로 다시 실행되지 않아서
+                        // /error도 인증 필요로 막아두면 원래 상태코드가 전부 403으로 뒤바뀜 - 그래서 예외 처리
+                        .requestMatchers("/error").permitAll()
                         // 나머지 API는 전부 인증 필요
                         .anyRequest().authenticated()
                 )
