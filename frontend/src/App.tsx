@@ -1,12 +1,24 @@
 import { useEffect, useState } from 'react';
-import { fetchTransactions, createTransaction, updateTransaction, deleteTransaction, UNAUTHORIZED_EVENT } from './api/client';
+import {
+  fetchTransactions,
+  createTransaction,
+  updateTransaction,
+  deleteTransaction,
+  fetchWishlist,
+  createWishlistItem,
+  deleteWishlistItem,
+  UNAUTHORIZED_EVENT,
+} from './api/client';
 import type { Transaction, TransactionInput, TransactionType } from './types/transaction';
+import type { WishlistItem, WishlistItemInput } from './types/wishlist';
 import { TransactionForm } from './components/TransactionForm';
 import { TransactionList } from './components/TransactionList';
 import { TransactionFilter } from './components/TransactionFilter';
 import { MonthSelector } from './components/MonthSelector';
 import { SummaryCard } from './components/SummaryCard';
 import { CategoryBarChart } from './components/CategoryBarChart';
+import { WishlistForm } from './components/WishlistForm';
+import { WishlistList } from './components/WishlistList';
 import { LoginPage } from './components/LoginPage';
 import { getToken, clearToken } from './auth';
 import './App.css';
@@ -127,6 +139,36 @@ function App() {
     setIsLoggedIn(false);
   };
 
+  const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
+
+  const loadWishlist = () => {
+    fetchWishlist()
+      .then(setWishlist)
+      .catch((err) => setError(err.message));
+  };
+
+  useEffect(() => {
+    loadWishlist();
+  }, []);
+
+  const handleWishlistCreate = async (input: WishlistItemInput) => {
+    try {
+      await createWishlistItem(input);
+      loadWishlist();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '위시리스트 등록 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleWishlistDelete = async (id: number) => {
+    try {
+      await deleteWishlistItem(id);
+      loadWishlist();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '위시리스트 삭제 중 오류가 발생했습니다.');
+    }
+  };
+
   if (!isLoggedIn) {
     return <LoginPage onLoginSuccess={() => setIsLoggedIn(true)} />;
   }
@@ -170,6 +212,12 @@ function App() {
       <div className="section">
         <h2 className="section-title">거래 등록</h2>
         <TransactionForm onSubmit={handleCreate} />
+      </div>
+
+      <div className="section">
+        <h2 className="section-title">위시리스트</h2>
+        <WishlistList items={wishlist} onDelete={handleWishlistDelete} />
+        <WishlistForm onSubmit={handleWishlistCreate} />
       </div>
     </div>
   );

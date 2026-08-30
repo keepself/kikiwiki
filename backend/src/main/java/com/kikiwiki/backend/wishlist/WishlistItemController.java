@@ -12,9 +12,19 @@ import java.util.List;
 public class WishlistItemController {
 
     private final WishlistItemRepository wishlistItemRepository;
+    private final LinkPreviewService linkPreviewService;
 
-    public WishlistItemController(WishlistItemRepository wishlistItemRepository) {
+    public WishlistItemController(WishlistItemRepository wishlistItemRepository, LinkPreviewService linkPreviewService) {
         this.wishlistItemRepository = wishlistItemRepository;
+        this.linkPreviewService = linkPreviewService;
+    }
+
+    // 상품 링크를 붙여넣으면 제목/이미지(가능하면 가격)를 미리 가져와서 폼에 채워줌 (저장은 별도)
+    // URL을 쿼리스트링이 아닌 요청 본문으로 받음 - 이미 퍼센트 인코딩된 URL(예: 네이버 스마트스토어)이
+    // 쿼리스트링으로 가면 이중 인코딩되어 Spring Security 방화벽이 403으로 차단하는 문제가 있었음
+    @PostMapping("/preview")
+    public LinkPreviewResponse preview(@RequestBody LinkPreviewRequest request) {
+        return linkPreviewService.fetchPreview(request.getUrl());
     }
 
     @PostMapping

@@ -1,4 +1,5 @@
 import type { Category, Transaction, TransactionInput, TransactionPage, TransactionType } from '../types/transaction';
+import type { WishlistItem, WishlistItemInput } from '../types/wishlist';
 import { getToken, clearToken } from '../auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -145,6 +146,74 @@ export async function fetchCategorySummary(month: string, type: TransactionType)
 
   if (!response.ok) {
     throw new Error(`카테고리별 요약 조회 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function fetchWishlist(): Promise<WishlistItem[]> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/wishlist`);
+
+  if (!response.ok) {
+    throw new Error(`위시리스트 조회 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function createWishlistItem(input: WishlistItemInput): Promise<WishlistItem> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/wishlist`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error(`위시리스트 등록 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function updateWishlistItem(id: number, input: WishlistItemInput): Promise<WishlistItem> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/wishlist/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error(`위시리스트 수정 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function deleteWishlistItem(id: number): Promise<void> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/wishlist/${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error(`위시리스트 삭제 실패: ${response.status}`);
+  }
+}
+
+export interface LinkPreview {
+  title: string | null;
+  imageUrl: string | null;
+  price: string | null;
+}
+
+export async function fetchLinkPreview(url: string): Promise<LinkPreview> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/wishlist/preview`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`링크 정보 가져오기 실패: ${response.status}`);
   }
 
   return response.json();

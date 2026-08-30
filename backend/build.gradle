@@ -29,6 +29,8 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+	// 위시리스트 링크 미리보기: 상품 페이지의 Open Graph 메타태그(og:title, og:image)를 안정적으로 파싱하기 위함
+	implementation 'org.jsoup:jsoup:1.18.1'
 }
 tasks.named('test') {
 	useJUnitPlatform()
