@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchTransactions, createTransaction, updateTransaction, deleteTransaction } from './api/client';
+import { fetchTransactions, createTransaction, updateTransaction, deleteTransaction, UNAUTHORIZED_EVENT } from './api/client';
 import type { Transaction, TransactionInput, TransactionType } from './types/transaction';
 import { TransactionForm } from './components/TransactionForm';
 import { TransactionList } from './components/TransactionList';
@@ -54,6 +54,13 @@ function App() {
       })
       .catch((err) => setError(err.message));
   };
+
+  // 어떤 API 요청이든 401/403을 받으면(토큰 만료 등) 새로고침 없이 로그인 화면으로 전환
+  useEffect(() => {
+    const handleUnauthorized = () => setIsLoggedIn(false);
+    window.addEventListener(UNAUTHORIZED_EVENT, handleUnauthorized);
+    return () => window.removeEventListener(UNAUTHORIZED_EVENT, handleUnauthorized);
+  }, []);
 
   useEffect(() => {
     loadFirstPage();

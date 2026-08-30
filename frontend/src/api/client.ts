@@ -3,6 +3,9 @@ import { getToken, clearToken } from '../auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+// App.tsx가 이 이벤트를 구독해서 isLoggedIn을 false로 바꿈 (페이지 새로고침 없이 로그인 화면으로 전환)
+export const UNAUTHORIZED_EVENT = 'kikiwiki:unauthorized';
+
 // 모든 API 호출이 거치는 공통 래퍼: 토큰을 자동으로 헤더에 싣고, 401/403이면 로그인 화면으로 보냄
 async function authorizedFetch(url: string, options: RequestInit = {}): Promise<Response> {
   const token = getToken();
@@ -17,11 +20,9 @@ async function authorizedFetch(url: string, options: RequestInit = {}): Promise<
   if (response.status === 401 || response.status === 403) {
     console.error('인증 실패 응답 받음:', url, response.status);
     clearToken();
-    // 새로고침을 한 번만 하도록 방지 (원인 불명 401/403이 반복되면 무한 새로고침에 빠지는 걸 막음)
-    if (!sessionStorage.getItem('kikiwiki_auth_reload_guard')) {
-      sessionStorage.setItem('kikiwiki_auth_reload_guard', '1');
-      window.location.reload(); // 로그인 화면으로 돌아가게 함
-    }
+    // 새로고침 대신 이벤트만 발생시킴 - 여러 요청이 동시에 401/403을 받아도
+    // React 상태 전환은 한 번만 일어나므로 새로고침 무한루프 위험이 없음
+    window.dispatchEvent(new Event(UNAUTHORIZED_EVENT));
     throw new Error('로그인이 필요합니다.');
   }
 

@@ -6,7 +6,6 @@ export function getToken(): string | null {
 
 export function setToken(token: string): void {
   localStorage.setItem(TOKEN_KEY, token);
-  sessionStorage.removeItem('kikiwiki_auth_reload_guard');
 }
 
 export function clearToken(): void {
