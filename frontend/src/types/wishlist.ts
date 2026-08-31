@@ -8,6 +8,14 @@ export interface WishlistItem {
   productUrl: string | null;
   priority: WishlistPriority;
   createdAt: string;
+  purchased: boolean;
+  purchasedAt: string | null;
+  linkedTransactionId: number | null;
+}
+
+export interface WishlistPurchaseInput {
+  categoryId: number;
+  price: number | null;
 }
 
 export interface WishlistItemInput {

@@ -3,15 +3,18 @@ import type { WishlistItemInput, WishlistPriority } from '../types/wishlist';
 import { fetchLinkPreview } from '../api/client';
 
 interface Props {
+  initialValues?: WishlistItemInput;
+  submitLabel?: string;
   onSubmit: (input: WishlistItemInput) => Promise<void>;
 }
 
-export function WishlistForm({ onSubmit }: Props) {
-  const [name, setName] = useState('');
-  const [price, setPrice] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
-  const [productUrl, setProductUrl] = useState('');
-  const [priority, setPriority] = useState<WishlistPriority>('MEDIUM');
+export function WishlistForm({ initialValues, submitLabel, onSubmit }: Props) {
+  const isEditing = !!initialValues;
+  const [name, setName] = useState(initialValues?.name ?? '');
+  const [price, setPrice] = useState(initialValues?.price != null ? String(initialValues.price) : '');
+  const [imageUrl, setImageUrl] = useState(initialValues?.imageUrl ?? '');
+  const [productUrl, setProductUrl] = useState(initialValues?.productUrl ?? '');
+  const [priority, setPriority] = useState<WishlistPriority>(initialValues?.priority ?? 'MEDIUM');
   const [submitting, setSubmitting] = useState(false);
   const [fetchingPreview, setFetchingPreview] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
@@ -58,12 +61,14 @@ export function WishlistForm({ onSubmit }: Props) {
         priority,
       });
 
-      setName('');
-      setPrice('');
-      setImageUrl('');
-      setProductUrl('');
-      setPriority('MEDIUM');
-      setPreviewError(null);
+      if (!isEditing) {
+        setName('');
+        setPrice('');
+        setImageUrl('');
+        setProductUrl('');
+        setPriority('MEDIUM');
+        setPreviewError(null);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -89,7 +94,7 @@ export function WishlistForm({ onSubmit }: Props) {
 
       {imageUrl && (
         <div className="wishlist-form__preview-image">
-          <img src={imageUrl} alt="미리보기" />
+          <img src={imageUrl} alt="미리보기" referrerPolicy="no-referrer" />
         </div>
       )}
 
@@ -123,7 +128,7 @@ export function WishlistForm({ onSubmit }: Props) {
       </div>
 
       <button type="submit" className="submit-button" disabled={submitting}>
-        {submitting ? '등록 중...' : '등록하기'}
+        {submitting ? '저장 중...' : submitLabel ?? '등록하기'}
       </button>
     </form>
   );

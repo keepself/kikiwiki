@@ -12,6 +12,9 @@ public class WishlistItemResponse {
     private String productUrl;
     private WishlistPriority priority;
     private LocalDateTime createdAt;
+    private boolean purchased;
+    private LocalDateTime purchasedAt;
+    private Long linkedTransactionId;
 
     public WishlistItemResponse(WishlistItem item) {
         this.id = item.getId();
@@ -21,6 +24,9 @@ public class WishlistItemResponse {
         this.productUrl = item.getProductUrl();
         this.priority = item.getPriority();
         this.createdAt = item.getCreatedAt();
+        this.purchased = item.isPurchased();
+        this.purchasedAt = item.getPurchasedAt();
+        this.linkedTransactionId = item.getLinkedTransactionId();
     }
 
     public Long getId() {
@@ -49,5 +55,17 @@ public class WishlistItemResponse {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public boolean isPurchased() {
+        return purchased;
+    }
+
+    public LocalDateTime getPurchasedAt() {
+        return purchasedAt;
+    }
+
+    public Long getLinkedTransactionId() {
+        return linkedTransactionId;
     }
 }

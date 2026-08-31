@@ -17,7 +17,7 @@ export function CategoryBarChart({ month, refreshKey }: Props) {
 
   if (summary.length === 0) {
     return (
-      <div className="category-chart">
+      <div className="card category-chart">
         <ChartTypeToggle type={type} onChange={setType} />
         <p className="empty-state" style={{ padding: '1.5rem' }}>
           {type === 'EXPENSE' ? '지출' : '수입'} 내역이 없어요.
@@ -29,7 +29,7 @@ export function CategoryBarChart({ month, refreshKey }: Props) {
   const maxAmount = Math.max(...summary.map((s) => s.totalAmount));
 
   return (
-    <div className="category-chart">
+    <div className="card category-chart">
       <ChartTypeToggle type={type} onChange={setType} />
 
       <div className="category-chart__bars">

@@ -1,7 +1,98 @@
 .app {
-  max-width: 480px;
+  max-width: 1040px;
   margin: 0 auto;
-  padding: 2rem 1.25rem 4rem;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.section {
+  margin-bottom: 1.75rem;
+}
+
+.top-row {
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  gap: 1.5rem;
+  align-items: start;
+  margin-bottom: 1.75rem;
+}
+
+.top-row__left,
+.top-row__right {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+@media (max-width: 780px) {
+  .top-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.card-header-row .section-title {
+  margin-bottom: 0;
+}
+
+.card-header-row--end {
+  justify-content: flex-end;
+}
+
+.add-button {
+  border: none;
+  background: var(--color-accent);
+  color: white;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+}
+
+.add-button:hover {
+  background: var(--color-accent-strong);
+}
+
+/* ---- Modal ---- */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(46, 59, 63, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  z-index: 100;
+}
+
+.modal {
+  background: var(--color-bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 1.25rem;
+}
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.modal__header h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
 }
 
 .app-header {
@@ -24,10 +115,6 @@
   margin-bottom: 1rem;
 }
 
-.section {
-  margin-bottom: 1.75rem;
-}
-
 .section-title {
   font-size: 0.9375rem;
   font-weight: 700;
@@ -38,11 +125,9 @@
 /* ---- Month Selector ---- */
 
 .month-selector {
-  background: var(--color-bg);
-  border-radius: var(--radius-lg);
-  padding: 1.25rem;
-  box-shadow: var(--shadow-card);
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .month-selector__year {
@@ -120,13 +205,15 @@
 /* ---- Summary Card ---- */
 
 .summary-card {
-  background: linear-gradient(180deg, #E6F7FC 0%, #FFFFFF 100%);
-  border-radius: var(--radius-lg);
-  padding: 1.5rem;
-  box-shadow: var(--shadow-card);
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.summary-card__toggle-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
 }
 
 .summary-card__mood {
@@ -134,6 +221,11 @@
   align-items: center;
   gap: 10px;
   margin-bottom: 0.25rem;
+}
+
+.summary-card__mood-text {
+  flex: 1;
+  min-width: 0;
 }
 
 .summary-card__mood-face {
@@ -154,6 +246,11 @@
   color: var(--color-text);
 }
 
+.summary-card__diff {
+  font-size: 1.125rem;
+  font-weight: 800;
+}
+
 .summary-card__balance-value {
   font-size: 2rem;
   font-weight: 700;
@@ -168,10 +265,18 @@
 
 .summary-card__stat {
   flex: 1;
-  background: white;
   border-radius: var(--radius-sm);
   padding: 0.75rem;
   text-align: center;
+  color: var(--color-text);
+}
+
+.summary-card__stat--income {
+  background: var(--color-income-subtle);
+}
+
+.summary-card__stat--expense {
+  background: var(--color-expense-subtle);
 }
 
 .summary-card__stat-label {
@@ -188,12 +293,133 @@
 .text-income { color: var(--color-income); }
 .text-expense { color: var(--color-expense); }
 
+.toggle-switch-group {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.toggle-switch-group__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.summary-card--savings .toggle-switch-group__label {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.toggle-switch {
+  flex-shrink: 0;
+  width: 44px;
+  height: 24px;
+  border: none;
+  border-radius: 999px;
+  background: #D9D9D9;
+  position: relative;
+  padding: 0;
+  transition: background 0.2s;
+}
+
+.toggle-switch--on {
+  background: var(--color-accent);
+}
+
+.toggle-switch__knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s;
+}
+
+.toggle-switch--on .toggle-switch__knob {
+  transform: translateX(20px);
+}
+
+/* ---- Savings mode ---- */
+
+.summary-card--savings {
+  background: #1C1E1F;
+  color: white;
+  padding: 1.25rem;
+  border-radius: var(--radius-lg);
+}
+
+.summary-card--savings .summary-card__mood-text {
+  color: white;
+}
+
+.summary-card__balance-value--savings {
+  color: #FFD54F;
+}
+
+.summary-card--savings .summary-card__stat {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+}
+
+.summary-card--savings .summary-card__stat-label {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.summary-card__budget-setup {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.summary-card__budget-setup input {
+  flex: 1;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.summary-card__budget-setup input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.summary-card__budget-edit {
+  align-self: flex-start;
+  border: none;
+  background: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.summary-card__budget-edit:hover {
+  color: white;
+}
+
 /* ---- Filter Bar ---- */
 
 .filter-bar {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
+}
+
+.filter-bar-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
   margin-bottom: 0.75rem;
+}
+
+.filter-bar-row .add-button {
+  flex-shrink: 0;
 }
 
 .filter-bar select {
@@ -206,13 +432,40 @@
   background: var(--color-accent-subtle);
 }
 
+.filter-bar__day-select {
+  width: 122px;
+}
+
+.filter-bar__search {
+  width: 122px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.8125rem;
+  color: var(--color-text);
+}
+
+/* ---- Card (title-in-box) ---- */
+
+.card {
+  background: var(--color-bg);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-card);
+  min-width: 0;
+}
+
+.card--bordered {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+}
+
 /* ---- Transaction List ---- */
 
 .transaction-list {
-  background: var(--color-bg);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
-  overflow: hidden;
+  margin: 0 -1.25rem;
 }
 
 .transaction-row {
@@ -258,9 +511,17 @@
   white-space: nowrap;
 }
 
-.transaction-row__date {
-  font-size: 0.75rem;
-  color: var(--color-text-muted);
+.transaction-date-header {
+  padding: 0.875rem 1.25rem 0.5rem;
+  border-top: 1px solid var(--color-border);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.transaction-list > div:first-child .transaction-date-header {
+  padding-top: 0;
+  border-top: none;
 }
 
 .transaction-row__amount {
@@ -271,7 +532,29 @@
 
 .transaction-row__actions {
   display: flex;
+  align-items: center;
   gap: 0.25rem;
+}
+
+.transaction-row__chevron {
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s;
+}
+
+.transaction-row__chevron:hover {
+  color: var(--color-accent-strong);
+}
+
+.transaction-row__chevron--open {
+  transform: rotate(90deg);
 }
 
 .text-button {
@@ -287,6 +570,21 @@
   color: var(--color-accent-strong);
 }
 
+.action-button {
+  border: none;
+  background: #F2F1F6;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+}
+
+.action-button:hover {
+  background: var(--color-accent-subtle);
+  color: var(--color-accent-strong);
+}
+
 .empty-state {
   padding: 3rem 1.25rem;
   text-align: center;
@@ -294,7 +592,7 @@
   font-size: 0.875rem;
 }
 
-.load-more-button {
+.expand-toggle-button {
   width: 100%;
   border: none;
   background: none;
@@ -302,10 +600,23 @@
   font-size: 0.8125rem;
   font-weight: 700;
   color: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
 }
 
-.load-more-button:hover {
+.expand-toggle-button:hover {
   color: var(--color-accent-strong);
+}
+
+.expand-toggle-button__arrow {
+  display: inline-block;
+  transition: transform 0.15s;
+}
+
+.expand-toggle-button__arrow--up {
+  transform: rotate(180deg);
 }
 
 /* ---- Edit Row ---- */
@@ -330,10 +641,6 @@
 /* ---- Form ---- */
 
 .transaction-form {
-  background: var(--color-bg);
-  border-radius: var(--radius-lg);
-  padding: 1.25rem;
-  box-shadow: var(--shadow-card);
   display: flex;
   flex-direction: column;
   gap: 0.875rem;
@@ -414,13 +721,6 @@
 }
 
 /* ---- Category Bar Chart ---- */
-
-.category-chart {
-  background: var(--color-bg);
-  border-radius: var(--radius-lg);
-  padding: 1.25rem;
-  box-shadow: var(--shadow-card);
-}
 
 .chart-type-toggle {
   display: flex;
@@ -550,21 +850,21 @@
 .wishlist-grid .empty-state {
   grid-column: 1 / -1;
   background: var(--color-bg);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
 }
 
 .wishlist-card {
   background: var(--color-bg);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 
 .wishlist-card__image {
   position: relative;
   aspect-ratio: 1 / 1;
-  background: var(--color-accent-subtle);
+  background: #F7F7F5;
 }
 
 .wishlist-card__image img {
@@ -589,25 +889,18 @@
   top: 0.5rem;
   left: 0.5rem;
   font-size: 0.6875rem;
-  font-weight: 700;
-  padding: 0.25rem 0.55rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
   border-radius: 999px;
   white-space: nowrap;
-}
-
-.wishlist-card__priority-badge--high {
-  background: var(--color-expense-subtle);
-  color: #A8543F;
-}
-
-.wishlist-card__priority-badge--medium {
-  background: var(--color-accent-subtle);
-  color: var(--color-accent-strong);
-}
-
-.wishlist-card__priority-badge--low {
-  background: var(--color-bg);
+  background: rgba(255, 255, 255, 0.9);
   color: var(--color-text-muted);
+}
+
+/* 높음만 살짝 진하게 - 색으로 튀지 않고 두께 차이로만 구분 */
+.wishlist-card__priority-badge--high {
+  color: var(--color-text);
+  font-weight: 700;
 }
 
 .wishlist-card__delete {
@@ -618,7 +911,7 @@
   height: 1.5rem;
   border: none;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.9);
   color: var(--color-text-muted);
   font-size: 1rem;
   line-height: 1;
@@ -629,6 +922,93 @@
 
 .wishlist-card__delete:hover {
   color: var(--color-accent-strong);
+}
+
+.wishlist-card__purchase {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--color-income);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wishlist-card__purchase:hover {
+  background: var(--color-income);
+  color: white;
+}
+
+.wishlist-card__edit {
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 0.375rem;
+  padding: 0;
+}
+
+.wishlist-card__edit:hover {
+  color: var(--color-accent-strong);
+}
+
+.purchased-section {
+  margin-top: 0.5rem;
+}
+
+.purchased-list {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.purchased-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.purchased-row:last-child {
+  border-bottom: none;
+}
+
+.purchased-row__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-text);
+  text-decoration: line-through;
+}
+
+.purchased-row__price {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.purchased-row__date {
+  white-space: nowrap;
+}
+
+.wishlist-purchase-form__item-name {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  margin: 0;
 }
 
 .wishlist-card__body {
@@ -657,11 +1037,76 @@
   margin-top: 0.25rem;
 }
 
+/* ---- Spending Calendar ---- */
+
+.spending-calendar__header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.spending-calendar__header .section-title {
+  margin-bottom: 0;
+  min-width: 2.5rem;
+  text-align: center;
+}
+
+.spending-calendar__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 0.375rem;
+}
+
+.spending-calendar__weekdays span {
+  text-align: center;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.spending-calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.spending-calendar__cell {
+  aspect-ratio: 1 / 1.05;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 2px 0;
+}
+
+.spending-calendar__cell--today {
+  background: var(--color-accent-subtle);
+}
+
+.spending-calendar__day {
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+}
+
+.spending-calendar__amount {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.spending-calendar__amount--income {
+  color: var(--color-income);
+}
+
+.spending-calendar__amount--expense {
+  color: var(--color-expense);
+}
+
 .wishlist-form {
-  background: var(--color-bg);
-  border-radius: var(--radius-lg);
-  padding: 1.25rem;
-  box-shadow: var(--shadow-card);
   display: flex;
   flex-direction: column;
   gap: 0.875rem;
