@@ -19,7 +19,7 @@ services:
       retries: 10
 
   backend:
-    image: kikiwiki-backend:latest
+    image: ghcr.io/keepself/kikiwiki-backend:latest
     container_name: kikiwiki-backend
     restart: unless-stopped
     depends_on:
