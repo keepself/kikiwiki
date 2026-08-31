@@ -40,6 +40,9 @@ public class Transaction {
     // null이면 살아있는 거래, 값이 있으면 그 시점에 삭제된 거래
     private LocalDateTime deletedAt;
 
+    // 고정지출/구독 템플릿에서 "이번 달 추가"로 생성된 거래인 경우, 그 템플릿의 id (추적/중복 방지용)
+    private Long recurringItemId;
+
     // JPA는 인자 없는 생성자가 반드시 필요함 (엔티티를 DB에서 읽어올 때 내부적으로 사용)
     protected Transaction() {
     }
@@ -70,6 +73,10 @@ public class Transaction {
 
     public void softDelete() {
         this.deletedAt = LocalDateTime.now();
+    }
+
+    public void linkRecurringItem(Long recurringItemId) {
+        this.recurringItemId = recurringItemId;
     }
 
     public boolean isDeleted() {
@@ -106,5 +113,9 @@ public class Transaction {
 
     public LocalDateTime getDeletedAt() {
         return deletedAt;
+    }
+
+    public Long getRecurringItemId() {
+        return recurringItemId;
     }
 }

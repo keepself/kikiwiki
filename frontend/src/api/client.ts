@@ -1,5 +1,6 @@
 import type { Category, Transaction, TransactionInput, TransactionPage, TransactionType } from '../types/transaction';
 import type { WishlistItem, WishlistItemInput, WishlistPurchaseInput } from '../types/wishlist';
+import type { RecurringItem, RecurringItemInput } from '../types/recurringItem';
 import { getToken, clearToken } from '../auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -228,6 +229,71 @@ export async function fetchLinkPreview(url: string): Promise<LinkPreview> {
 
   if (!response.ok) {
     throw new Error(`링크 정보 가져오기 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function fetchRecurringItems(month: string): Promise<RecurringItem[]> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/recurring-items?month=${month}`);
+
+  if (!response.ok) {
+    throw new Error(`고정지출 조회 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function createRecurringItem(input: RecurringItemInput): Promise<RecurringItem> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/recurring-items`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error(`고정지출 등록 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function updateRecurringItem(id: number, input: RecurringItemInput): Promise<RecurringItem> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/recurring-items/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error(`고정지출 수정 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function deleteRecurringItem(id: number): Promise<void> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/recurring-items/${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error(`고정지출 삭제 실패: ${response.status}`);
+  }
+}
+
+export async function applyRecurringItem(id: number): Promise<Transaction> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/recurring-items/${id}/apply`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+  });
+
+  if (!response.ok) {
+    if (response.status === 400) {
+      throw new Error('이미 이번 달에 추가된 항목이에요.');
+    }
+    throw new Error(`고정지출 추가 실패: ${response.status}`);
   }
 
   return response.json();

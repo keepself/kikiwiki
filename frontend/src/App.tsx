@@ -9,10 +9,16 @@ import {
   updateWishlistItem,
   purchaseWishlistItem,
   deleteWishlistItem,
+  fetchRecurringItems,
+  createRecurringItem,
+  updateRecurringItem,
+  deleteRecurringItem,
+  applyRecurringItem,
   UNAUTHORIZED_EVENT,
 } from './api/client';
 import type { Transaction, TransactionInput, TransactionType } from './types/transaction';
 import type { WishlistItem, WishlistItemInput, WishlistPurchaseInput } from './types/wishlist';
+import type { RecurringItem, RecurringItemInput } from './types/recurringItem';
 import { TransactionForm } from './components/TransactionForm';
 import { TransactionList } from './components/TransactionList';
 import { TransactionFilter } from './components/TransactionFilter';
@@ -23,6 +29,8 @@ import { SpendingCalendar } from './components/SpendingCalendar';
 import { WishlistForm } from './components/WishlistForm';
 import { WishlistList } from './components/WishlistList';
 import { WishlistPurchaseForm } from './components/WishlistPurchaseForm';
+import { RecurringItemForm } from './components/RecurringItemForm';
+import { RecurringItemList } from './components/RecurringItemList';
 import { LoginPage } from './components/LoginPage';
 import { Modal } from './components/Modal';
 import { getToken, clearToken } from './auth';
@@ -192,6 +200,9 @@ function App() {
   const [editingWishlistItem, setEditingWishlistItem] = useState<WishlistItem | null>(null);
   const [purchasingWishlistItem, setPurchasingWishlistItem] = useState<WishlistItem | null>(null);
 
+  const [showRecurringForm, setShowRecurringForm] = useState(false);
+  const [editingRecurringItem, setEditingRecurringItem] = useState<RecurringItem | null>(null);
+
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
 
   const loadWishlist = () => {
@@ -246,6 +257,58 @@ function App() {
     }
   };
 
+  const [recurringItems, setRecurringItems] = useState<RecurringItem[]>([]);
+
+  const loadRecurringItems = () => {
+    fetchRecurringItems(month)
+      .then(setRecurringItems)
+      .catch((err) => setError(err.message));
+  };
+
+  useEffect(() => {
+    loadRecurringItems();
+  }, [month]);
+
+  const handleRecurringCreate = async (input: RecurringItemInput) => {
+    try {
+      await createRecurringItem(input);
+      loadRecurringItems();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '고정지출 등록 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleRecurringUpdate = async (input: RecurringItemInput) => {
+    if (!editingRecurringItem) return;
+    try {
+      await updateRecurringItem(editingRecurringItem.id, input);
+      loadRecurringItems();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '고정지출 수정 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleRecurringDelete = async (id: number) => {
+    try {
+      await deleteRecurringItem(id);
+      loadRecurringItems();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '고정지출 해지 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleRecurringApply = async (item: RecurringItem) => {
+    try {
+      await applyRecurringItem(item.id);
+      loadRecurringItems();
+      loadFirstPage();
+      loadMonthSummary();
+      bumpRefreshKey();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '고정지출 추가 중 오류가 발생했습니다.');
+    }
+  };
+
   if (!isLoggedIn) {
     return <LoginPage onLoginSuccess={() => setIsLoggedIn(true)} />;
   }
@@ -281,6 +344,21 @@ function App() {
               </button>
             </div>
             <SpendingCalendar month={month} transactions={monthTransactions} />
+          </div>
+
+          <div className="card section">
+            <div className="card-header-row">
+              <h2 className="section-title">고정지출/구독</h2>
+              <button className="add-button" onClick={() => setShowRecurringForm(true)}>
+                + 추가
+              </button>
+            </div>
+            <RecurringItemList
+              items={recurringItems}
+              onApply={handleRecurringApply}
+              onEdit={setEditingRecurringItem}
+              onDelete={handleRecurringDelete}
+            />
           </div>
         </div>
 
@@ -379,6 +457,34 @@ function App() {
             onSubmit={async (input) => {
               await handleWishlistPurchase(input);
               setPurchasingWishlistItem(null);
+            }}
+          />
+        </Modal>
+      )}
+
+      {showRecurringForm && (
+        <Modal title="고정지출/구독 추가" onClose={() => setShowRecurringForm(false)}>
+          <RecurringItemForm
+            onSubmit={async (input) => {
+              await handleRecurringCreate(input);
+              setShowRecurringForm(false);
+            }}
+          />
+        </Modal>
+      )}
+
+      {editingRecurringItem && (
+        <Modal title="고정지출/구독 수정" onClose={() => setEditingRecurringItem(null)}>
+          <RecurringItemForm
+            submitLabel="수정하기"
+            initialValues={{
+              name: editingRecurringItem.name,
+              amount: editingRecurringItem.amount,
+              categoryId: editingRecurringItem.categoryId,
+            }}
+            onSubmit={async (input) => {
+              await handleRecurringUpdate(input);
+              setEditingRecurringItem(null);
             }}
           />
         </Modal>

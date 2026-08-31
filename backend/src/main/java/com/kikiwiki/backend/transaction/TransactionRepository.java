@@ -18,6 +18,11 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     List<Transaction> findAllByDeletedAtIsNullAndTransactionDateBetween(LocalDate start, LocalDate end);
 
+    // 특정 고정지출 템플릿이 해당 기간(보통 한 달)에 이미 거래로 추가됐는지 확인 (중복 추가 방지)
+    boolean existsByRecurringItemIdAndTransactionDateBetweenAndDeletedAtIsNull(
+            Long recurringItemId, LocalDate start, LocalDate end
+    );
+
     // type, categoryId는 null이면 조건 무시 (전체 포함). 최신 날짜 순으로 정렬.
     @Query("""
             SELECT t FROM Transaction t
