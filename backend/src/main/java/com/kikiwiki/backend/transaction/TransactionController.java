@@ -2,6 +2,8 @@ package com.kikiwiki.backend.transaction;
 
 import com.kikiwiki.backend.category.Category;
 import com.kikiwiki.backend.category.CategoryRepository;
+import com.kikiwiki.backend.wishlist.WishlistItem;
+import com.kikiwiki.backend.wishlist.WishlistItemRepository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,11 +24,14 @@ public class TransactionController {
 
     private final TransactionRepository transactionRepository;
     private final CategoryRepository categoryRepository;
+    private final WishlistItemRepository wishlistItemRepository;
 
     public TransactionController(TransactionRepository transactionRepository,
-                                  CategoryRepository categoryRepository) {
+                                  CategoryRepository categoryRepository,
+                                  WishlistItemRepository wishlistItemRepository) {
         this.transactionRepository = transactionRepository;
         this.categoryRepository = categoryRepository;
+        this.wishlistItemRepository = wishlistItemRepository;
     }
 
     private Category getCategoryOrThrow(Long categoryId) {
@@ -122,6 +127,11 @@ public class TransactionController {
 
         Transaction updated = transactionRepository.save(transaction);
 
+        wishlistItemRepository.findByLinkedTransactionIdAndDeletedAtIsNull(id).ifPresent(item -> {
+            item.syncPriceFromTransaction(updated.getAmount());
+            wishlistItemRepository.save(item);
+        });
+
         return new TransactionResponse(updated);
     }
 
@@ -132,6 +142,11 @@ public class TransactionController {
 
         transaction.softDelete();
         transactionRepository.save(transaction);
+
+        wishlistItemRepository.findByLinkedTransactionIdAndDeletedAtIsNull(id).ifPresent(item -> {
+            item.unmarkPurchased();
+            wishlistItemRepository.save(item);
+        });
 
         return ResponseEntity.noContent().build();
     }

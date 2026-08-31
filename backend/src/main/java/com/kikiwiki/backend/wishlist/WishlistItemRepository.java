@@ -10,4 +10,6 @@ public interface WishlistItemRepository extends JpaRepository<WishlistItem, Long
     List<WishlistItem> findAllByDeletedAtIsNullOrderByCreatedAtDesc();
 
     Optional<WishlistItem> findByIdAndDeletedAtIsNull(Long id);
+
+    Optional<WishlistItem> findByLinkedTransactionIdAndDeletedAtIsNull(Long linkedTransactionId);
 }

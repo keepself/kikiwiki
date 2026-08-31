@@ -1,5 +1,5 @@
 import type { Category, Transaction, TransactionInput, TransactionPage, TransactionType } from '../types/transaction';
-import type { WishlistItem, WishlistItemInput } from '../types/wishlist';
+import type { WishlistItem, WishlistItemInput, WishlistPurchaseInput } from '../types/wishlist';
 import { getToken, clearToken } from '../auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -189,6 +189,20 @@ export async function updateWishlistItem(id: number, input: WishlistItemInput): 
   return response.json();
 }
 
+export async function purchaseWishlistItem(id: number, input: WishlistPurchaseInput): Promise<WishlistItem> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/wishlist/${id}/purchase`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error(`구매완료 처리 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
 export async function deleteWishlistItem(id: number): Promise<void> {
   const response = await authorizedFetch(`${API_BASE_URL}/api/wishlist/${id}`, {
     method: 'DELETE',
@@ -217,4 +231,30 @@ export async function fetchLinkPreview(url: string): Promise<LinkPreview> {
   }
 
   return response.json();
+}
+
+export async function fetchBudget(): Promise<number | null> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/budget`);
+
+  if (!response.ok) {
+    throw new Error(`예산 조회 실패: ${response.status}`);
+  }
+
+  const data: { amount: number | null } = await response.json();
+  return data.amount;
+}
+
+export async function updateBudget(amount: number): Promise<number | null> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/budget`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ amount }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`예산 저장 실패: ${response.status}`);
+  }
+
+  const data: { amount: number | null } = await response.json();
+  return data.amount;
 }
