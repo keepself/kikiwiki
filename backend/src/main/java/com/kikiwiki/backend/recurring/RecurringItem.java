@@ -22,6 +22,9 @@ public class RecurringItem {
     @Column(nullable = false)
     private BigDecimal amount;
 
+    // 매달 결제되는 날짜(1~31). 지정 안 하면 적용 시점 기준으로 자동 결정됨 (RecurringItemController 참고)
+    private Integer dayOfMonth;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
@@ -35,9 +38,10 @@ public class RecurringItem {
     protected RecurringItem() {
     }
 
-    public RecurringItem(String name, BigDecimal amount, Category category) {
+    public RecurringItem(String name, BigDecimal amount, Integer dayOfMonth, Category category) {
         this.name = name;
         this.amount = amount;
+        this.dayOfMonth = dayOfMonth;
         this.category = category;
     }
 
@@ -46,9 +50,10 @@ public class RecurringItem {
         this.createdAt = LocalDateTime.now();
     }
 
-    public void update(String name, BigDecimal amount, Category category) {
+    public void update(String name, BigDecimal amount, Integer dayOfMonth, Category category) {
         this.name = name;
         this.amount = amount;
+        this.dayOfMonth = dayOfMonth;
         this.category = category;
     }
 
@@ -66,6 +71,10 @@ public class RecurringItem {
 
     public BigDecimal getAmount() {
         return amount;
+    }
+
+    public Integer getDayOfMonth() {
+        return dayOfMonth;
     }
 
     public Category getCategory() {

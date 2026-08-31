@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   fetchTransactions,
   createTransaction,
@@ -173,6 +173,7 @@ function App() {
       await updateTransaction(id, input);
       loadFirstPage();
       loadMonthSummary();
+      loadRecurringItems();
       bumpRefreshKey();
     } catch (err) {
       setError(err instanceof Error ? err.message : '수정 중 오류가 발생했습니다.');
@@ -184,6 +185,7 @@ function App() {
       await deleteTransaction(id);
       loadFirstPage();
       loadMonthSummary();
+      loadRecurringItems();
       bumpRefreshKey();
     } catch (err) {
       setError(err instanceof Error ? err.message : '삭제 중 오류가 발생했습니다.');
@@ -199,6 +201,8 @@ function App() {
   const [showWishForm, setShowWishForm] = useState(false);
   const [editingWishlistItem, setEditingWishlistItem] = useState<WishlistItem | null>(null);
   const [purchasingWishlistItem, setPurchasingWishlistItem] = useState<WishlistItem | null>(null);
+  const [showWishlistDetail, setShowWishlistDetail] = useState(false);
+  const [showRecurringDetail, setShowRecurringDetail] = useState(false);
 
   const [showRecurringForm, setShowRecurringForm] = useState(false);
   const [editingRecurringItem, setEditingRecurringItem] = useState<RecurringItem | null>(null);
@@ -258,10 +262,19 @@ function App() {
   };
 
   const [recurringItems, setRecurringItems] = useState<RecurringItem[]>([]);
+  const recurringRequestRef = useRef(0);
 
+  // 월을 빠르게 옮기면 여러 요청이 겹쳐서 나갈 수 있는데, 늦게 도착한 응답이
+  // 항상 이기면 이전 달 데이터가 최신 화면을 덮어쓸 수 있음 - 가장 마지막에
+  // "보낸" 요청의 응답만 반영되도록 순번으로 막음
   const loadRecurringItems = () => {
+    const requestId = ++recurringRequestRef.current;
     fetchRecurringItems(month)
-      .then(setRecurringItems)
+      .then((items) => {
+        if (recurringRequestRef.current === requestId) {
+          setRecurringItems(items);
+        }
+      })
       .catch((err) => setError(err.message));
   };
 
@@ -299,7 +312,8 @@ function App() {
 
   const handleRecurringApply = async (item: RecurringItem) => {
     try {
-      await applyRecurringItem(item.id);
+      // 지금 보고 있는 달을 그대로 서버에 넘기고, 실제 날짜(결제일 반영)는 서버가 계산함
+      await applyRecurringItem(item.id, month);
       loadRecurringItems();
       loadFirstPage();
       loadMonthSummary();
@@ -322,6 +336,51 @@ function App() {
 
       {error && <div className="error-banner">{error}</div>}
 
+      {showWishlistDetail ? (
+        <div className="card section">
+          <div className="card-header-row">
+            <button className="text-button" onClick={() => setShowWishlistDetail(false)}>
+              ‹ 뒤로
+            </button>
+            <h2 className="section-title">위시리스트</h2>
+            <button className="add-button" onClick={() => setShowWishForm(true)}>
+              + 추가
+            </button>
+          </div>
+          <WishlistList
+            items={wishlist}
+            onDelete={handleWishlistDelete}
+            onEdit={setEditingWishlistItem}
+            onPurchase={setPurchasingWishlistItem}
+          />
+        </div>
+      ) : showRecurringDetail ? (
+        <div className="card section">
+          <div className="card-header-row">
+            <button className="text-button" onClick={() => setShowRecurringDetail(false)}>
+              ‹ 뒤로
+            </button>
+            <h2 className="section-title">고정지출/구독</h2>
+            <button className="add-button" onClick={() => setShowRecurringForm(true)}>
+              + 추가
+            </button>
+          </div>
+          {recurringItems.length > 0 && (
+            <div className="recurring-summary">
+              이번 달 고정지출 합계
+              <span className="recurring-summary__amount tabular-nums">
+                {recurringItems.reduce((sum, item) => sum + item.amount, 0).toLocaleString()}원
+              </span>
+            </div>
+          )}
+          <RecurringItemList
+            items={recurringItems}
+            onApply={handleRecurringApply}
+            onEdit={setEditingRecurringItem}
+            onDelete={handleRecurringDelete}
+          />
+        </div>
+      ) : (
       <div className="top-row">
         <div className="top-row__left">
           <div className="card section">
@@ -344,21 +403,6 @@ function App() {
               </button>
             </div>
             <SpendingCalendar month={month} transactions={monthTransactions} />
-          </div>
-
-          <div className="card section">
-            <div className="card-header-row">
-              <h2 className="section-title">고정지출/구독</h2>
-              <button className="add-button" onClick={() => setShowRecurringForm(true)}>
-                + 추가
-              </button>
-            </div>
-            <RecurringItemList
-              items={recurringItems}
-              onApply={handleRecurringApply}
-              onEdit={setEditingRecurringItem}
-              onDelete={handleRecurringDelete}
-            />
           </div>
         </div>
 
@@ -394,6 +438,31 @@ function App() {
 
           <div className="card section">
             <div className="card-header-row">
+              <h2 className="section-title">고정지출/구독</h2>
+              <button className="add-button" onClick={() => setShowRecurringForm(true)}>
+                + 추가
+              </button>
+            </div>
+            {recurringItems.length > 0 && (
+              <div className="recurring-summary">
+                이번 달 고정지출 합계
+                <span className="recurring-summary__amount tabular-nums">
+                  {recurringItems.reduce((sum, item) => sum + item.amount, 0).toLocaleString()}원
+                </span>
+              </div>
+            )}
+            <RecurringItemList
+              items={recurringItems}
+              onApply={handleRecurringApply}
+              onEdit={setEditingRecurringItem}
+              onDelete={handleRecurringDelete}
+              limit={6}
+              onViewAll={() => setShowRecurringDetail(true)}
+            />
+          </div>
+
+          <div className="card section">
+            <div className="card-header-row">
               <h2 className="section-title">위시리스트</h2>
               <button className="add-button" onClick={() => setShowWishForm(true)}>
                 + 추가
@@ -404,10 +473,13 @@ function App() {
               onDelete={handleWishlistDelete}
               onEdit={setEditingWishlistItem}
               onPurchase={setPurchasingWishlistItem}
+              limit={6}
+              onViewAll={() => setShowWishlistDetail(true)}
             />
           </div>
         </div>
       </div>
+      )}
 
       {showTxForm && (
         <Modal title="거래 등록" onClose={() => setShowTxForm(false)}>
@@ -480,7 +552,7 @@ function App() {
             initialValues={{
               name: editingRecurringItem.name,
               amount: editingRecurringItem.amount,
-              categoryId: editingRecurringItem.categoryId,
+              dayOfMonth: editingRecurringItem.dayOfMonth,
             }}
             onSubmit={async (input) => {
               await handleRecurringUpdate(input);

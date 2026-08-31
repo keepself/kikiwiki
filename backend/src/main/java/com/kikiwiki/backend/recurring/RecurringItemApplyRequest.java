@@ -1,13 +1,20 @@
 package com.kikiwiki.backend.recurring;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
-// "이번 달 추가" 시 금액/날짜를 템플릿과 다르게 쓰고 싶을 때 덮어쓰기용 (둘 다 선택사항)
+// "이번 달 추가" 시 화면에서 보고 있는 달을 알려주고(month), 금액을 다르게 쓰고 싶으면 덮어쓰기(amount, 선택)
 public class RecurringItemApplyRequest {
 
+    private String month;
     private BigDecimal amount;
-    private LocalDate transactionDate;
+
+    public String getMonth() {
+        return month;
+    }
+
+    public void setMonth(String month) {
+        this.month = month;
+    }
 
     public BigDecimal getAmount() {
         return amount;
@@ -15,13 +22,5 @@ public class RecurringItemApplyRequest {
 
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
-    }
-
-    public LocalDate getTransactionDate() {
-        return transactionDate;
-    }
-
-    public void setTransactionDate(LocalDate transactionDate) {
-        this.transactionDate = transactionDate;
     }
 }

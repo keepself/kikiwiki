@@ -1,7 +1,5 @@
-import { useEffect, useState } from 'react';
-import type { Category } from '../types/transaction';
+import { useState } from 'react';
 import type { RecurringItemInput } from '../types/recurringItem';
-import { fetchCategories } from '../api/client';
 
 interface Props {
   initialValues?: RecurringItemInput;
@@ -11,22 +9,12 @@ interface Props {
 
 export function RecurringItemForm({ initialValues, submitLabel, onSubmit }: Props) {
   const isEditing = !!initialValues;
-  const [categories, setCategories] = useState<Category[]>([]);
   const [name, setName] = useState(initialValues?.name ?? '');
   const [amount, setAmount] = useState(initialValues?.amount != null ? String(initialValues.amount) : '');
-  const [categoryId, setCategoryId] = useState(
-    initialValues?.categoryId != null ? String(initialValues.categoryId) : ''
+  const [dayOfMonth, setDayOfMonth] = useState(
+    initialValues?.dayOfMonth != null ? String(initialValues.dayOfMonth) : ''
   );
   const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    fetchCategories('EXPENSE').then((list) => {
-      setCategories(list);
-      if (!initialValues) {
-        setCategoryId(list.length > 0 ? String(list[0].id) : '');
-      }
-    });
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,18 +27,19 @@ export function RecurringItemForm({ initialValues, submitLabel, onSubmit }: Prop
       alert('금액을 입력해주세요.');
       return;
     }
-    if (!categoryId) {
-      alert('카테고리를 선택해주세요.');
+    if (dayOfMonth && (Number(dayOfMonth) < 1 || Number(dayOfMonth) > 31)) {
+      alert('결제일은 1~31 사이로 입력해주세요.');
       return;
     }
 
     setSubmitting(true);
     try {
-      await onSubmit({ name, amount: Number(amount), categoryId: Number(categoryId) });
+      await onSubmit({ name, amount: Number(amount), dayOfMonth: dayOfMonth ? Number(dayOfMonth) : null });
 
       if (!isEditing) {
         setName('');
         setAmount('');
+        setDayOfMonth('');
       }
     } finally {
       setSubmitting(false);
@@ -70,14 +59,15 @@ export function RecurringItemForm({ initialValues, submitLabel, onSubmit }: Prop
       </div>
 
       <div className="form-field">
-        <label>카테고리</label>
-        <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+        <label>결제일 (선택)</label>
+        <input
+          type="number"
+          min={1}
+          max={31}
+          value={dayOfMonth}
+          onChange={(e) => setDayOfMonth(e.target.value)}
+          placeholder="비워두면 추가하는 날짜로 등록"
+        />
       </div>
 
       <button type="submit" className="submit-button" disabled={submitting}>

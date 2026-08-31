@@ -36,16 +36,20 @@ public class RecurringItemController {
         this.categoryRepository = categoryRepository;
     }
 
-    private Category getCategoryOrThrow(Long categoryId) {
-        return categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "존재하지 않는 카테고리입니다: " + categoryId));
+    // 고정지출/구독은 항상 "고정지출" 카테고리로 저장 (개별 선택 불필요)
+    private static final String FIXED_CATEGORY_NAME = "고정지출";
+
+    private Category getFixedCategoryOrThrow() {
+        return categoryRepository.findByName(FIXED_CATEGORY_NAME)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.INTERNAL_SERVER_ERROR, "'" + FIXED_CATEGORY_NAME + "' 카테고리가 없습니다."));
     }
 
     @PostMapping
     public ResponseEntity<RecurringItemResponse> create(@RequestBody RecurringItemRequest request) {
-        Category category = getCategoryOrThrow(request.getCategoryId());
+        Category category = getFixedCategoryOrThrow();
 
-        RecurringItem item = new RecurringItem(request.getName(), request.getAmount(), category);
+        RecurringItem item = new RecurringItem(request.getName(), request.getAmount(), request.getDayOfMonth(), category);
         RecurringItem saved = recurringItemRepository.save(item);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(new RecurringItemResponse(saved, false));
@@ -68,6 +72,19 @@ public class RecurringItemController {
                 .toList();
     }
 
+    // 결제일(dayOfMonth)이 지정돼 있으면 그 날짜로(달의 마지막 날을 넘으면 말일로 보정), 없으면
+    // 이번 실제 달을 보고 있으면 오늘 날짜로, 지난/다음 달을 보고 있으면 1일로 대체
+    private LocalDate resolveTransactionDate(RecurringItem item, YearMonth targetMonth) {
+        if (item.getDayOfMonth() != null) {
+            int day = Math.min(item.getDayOfMonth(), targetMonth.lengthOfMonth());
+            return targetMonth.atDay(day);
+        }
+        if (targetMonth.equals(YearMonth.now())) {
+            return LocalDate.now();
+        }
+        return targetMonth.atDay(1);
+    }
+
     private YearMonth parseYearMonthOrThrow(String month) {
         try {
             return YearMonth.parse(month);
@@ -81,8 +98,8 @@ public class RecurringItemController {
         RecurringItem item = recurringItemRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "고정지출 항목을 찾을 수 없습니다: " + id));
 
-        Category category = getCategoryOrThrow(request.getCategoryId());
-        item.update(request.getName(), request.getAmount(), category);
+        Category category = getFixedCategoryOrThrow();
+        item.update(request.getName(), request.getAmount(), request.getDayOfMonth(), category);
 
         RecurringItem updated = recurringItemRepository.save(item);
         return new RecurringItemResponse(updated, false);
@@ -95,10 +112,11 @@ public class RecurringItemController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "고정지출 항목을 찾을 수 없습니다: " + id));
 
         BigDecimal amount = (request != null && request.getAmount() != null) ? request.getAmount() : item.getAmount();
-        LocalDate transactionDate = (request != null && request.getTransactionDate() != null)
-                ? request.getTransactionDate() : LocalDate.now();
 
-        YearMonth targetMonth = YearMonth.from(transactionDate);
+        YearMonth targetMonth = (request != null && request.getMonth() != null)
+                ? parseYearMonthOrThrow(request.getMonth()) : YearMonth.now();
+        LocalDate transactionDate = resolveTransactionDate(item, targetMonth);
+
         boolean alreadyApplied = transactionRepository.existsByRecurringItemIdAndTransactionDateBetweenAndDeletedAtIsNull(
                 item.getId(), targetMonth.atDay(1), targetMonth.atEndOfMonth()
         );

@@ -6,6 +6,9 @@ interface Props {
   onDelete: (id: number) => Promise<void>;
   onEdit: (item: WishlistItem) => void;
   onPurchase: (item: WishlistItem) => void;
+  // 지정하면 활성 항목을 이 개수까지만 보여주고, 넘으면 "더보기"가 로컬 펼치기 대신 onViewAll을 호출함
+  limit?: number;
+  onViewAll?: () => void;
 }
 
 const PRIORITY_LABEL: Record<WishlistPriority, string> = {
@@ -20,10 +23,7 @@ const PRIORITY_ORDER: Record<WishlistPriority, number> = {
   LOW: 2,
 };
 
-const VISIBLE_LIMIT = 6;
-
-export function WishlistList({ items, onDelete, onEdit, onPurchase }: Props) {
-  const [expanded, setExpanded] = useState(false);
+export function WishlistList({ items, onDelete, onEdit, onPurchase, limit, onViewAll }: Props) {
   const [showPurchased, setShowPurchased] = useState(false);
 
   const activeItems = items.filter((item) => !item.purchased);
@@ -46,8 +46,8 @@ export function WishlistList({ items, onDelete, onEdit, onPurchase }: Props) {
   }
 
   const sortedItems = [...activeItems].sort((a, b) => PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]);
-  const hasMore = sortedItems.length > VISIBLE_LIMIT;
-  const visibleItems = expanded ? sortedItems : sortedItems.slice(0, VISIBLE_LIMIT);
+  const hasMore = limit != null && sortedItems.length > limit;
+  const visibleItems = limit != null ? sortedItems.slice(0, limit) : sortedItems;
 
   return (
     <>
@@ -111,11 +111,8 @@ export function WishlistList({ items, onDelete, onEdit, onPurchase }: Props) {
       )}
 
       {hasMore && (
-        <button className="expand-toggle-button" onClick={() => setExpanded((v) => !v)}>
-          {expanded ? '접기' : `더보기 (${sortedItems.length - VISIBLE_LIMIT})`}
-          <span className={`expand-toggle-button__arrow ${expanded ? 'expand-toggle-button__arrow--up' : ''}`}>
-            ▾
-          </span>
+        <button className="expand-toggle-button" onClick={onViewAll}>
+          더보기 ({sortedItems.length - (limit ?? 0)})
         </button>
       )}
 

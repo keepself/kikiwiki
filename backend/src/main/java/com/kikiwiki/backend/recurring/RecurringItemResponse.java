@@ -8,6 +8,7 @@ public class RecurringItemResponse {
     private Long id;
     private String name;
     private BigDecimal amount;
+    private Integer dayOfMonth;
     private Long categoryId;
     private String categoryName;
     private LocalDateTime createdAt;
@@ -17,6 +18,7 @@ public class RecurringItemResponse {
         this.id = item.getId();
         this.name = item.getName();
         this.amount = item.getAmount();
+        this.dayOfMonth = item.getDayOfMonth();
         this.categoryId = item.getCategory().getId();
         this.categoryName = item.getCategory().getName();
         this.createdAt = item.getCreatedAt();
@@ -33,6 +35,10 @@ public class RecurringItemResponse {
 
     public BigDecimal getAmount() {
         return amount;
+    }
+
+    public Integer getDayOfMonth() {
+        return dayOfMonth;
     }
 
     public Long getCategoryId() {

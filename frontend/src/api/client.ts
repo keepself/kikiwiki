@@ -282,11 +282,11 @@ export async function deleteRecurringItem(id: number): Promise<void> {
   }
 }
 
-export async function applyRecurringItem(id: number): Promise<Transaction> {
+export async function applyRecurringItem(id: number, month: string): Promise<Transaction> {
   const response = await authorizedFetch(`${API_BASE_URL}/api/recurring-items/${id}/apply`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({}),
+    body: JSON.stringify({ month }),
   });
 
   if (!response.ok) {

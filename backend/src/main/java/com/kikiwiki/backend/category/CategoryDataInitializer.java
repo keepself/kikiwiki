@@ -23,7 +23,7 @@ public class CategoryDataInitializer implements CommandLineRunner {
         }
 
         List<String> expenseCategories = List.of(
-                "식비", "교통", "쇼핑", "문화생활", "주거/통신", "의료", "교육", "경조사", "기타"
+                "식비", "교통", "쇼핑", "문화생활", "주거/통신", "의료", "교육", "경조사", "고정지출", "기타"
         );
         List<String> incomeCategories = List.of(
                 "급여", "용돈", "기타수입"

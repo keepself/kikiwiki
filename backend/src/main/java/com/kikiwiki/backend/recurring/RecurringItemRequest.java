@@ -6,7 +6,7 @@ public class RecurringItemRequest {
 
     private String name;
     private BigDecimal amount;
-    private Long categoryId;
+    private Integer dayOfMonth;
 
     public String getName() {
         return name;
@@ -24,11 +24,11 @@ public class RecurringItemRequest {
         this.amount = amount;
     }
 
-    public Long getCategoryId() {
-        return categoryId;
+    public Integer getDayOfMonth() {
+        return dayOfMonth;
     }
 
-    public void setCategoryId(Long categoryId) {
-        this.categoryId = categoryId;
+    public void setDayOfMonth(Integer dayOfMonth) {
+        this.dayOfMonth = dayOfMonth;
     }
 }

@@ -2,6 +2,7 @@ export interface RecurringItem {
   id: number;
   name: string;
   amount: number;
+  dayOfMonth: number | null;
   categoryId: number;
   categoryName: string;
   createdAt: string;
@@ -11,5 +12,5 @@ export interface RecurringItem {
 export interface RecurringItemInput {
   name: string;
   amount: number;
-  categoryId: number;
+  dayOfMonth: number | null;
 }
