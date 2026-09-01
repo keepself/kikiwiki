@@ -24,4 +24,10 @@ public interface ScheduleItemRepository extends JpaRepository<ScheduleItem, Long
     );
 
     Optional<ScheduleItem> findByIdAndDeletedAtIsNull(Long id);
+
+    // 소프트 삭제된 것도 포함해서 확인 - 하루 예외로 지운 날짜에 루틴이 다시 만들어지는 걸 막기 위함
+    boolean existsByRoutineIdAndStartDate(Long routineId, LocalDate startDate);
+
+    // 루틴 해지 시 그 루틴에서 만들어진 캘린더 일정을 전부 같이 지우기 위함
+    List<ScheduleItem> findAllByRoutineIdAndDeletedAtIsNull(Long routineId);
 }

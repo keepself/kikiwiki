@@ -25,6 +25,9 @@ public class ScheduleItem {
 
     private String memo;
 
+    // 고정 루틴에서 자동 생성된 항목이면 그 루틴의 id, 직접 등록한 일정이면 null
+    private Long routineId;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -39,6 +42,11 @@ public class ScheduleItem {
         this.startDate = startDate;
         this.endDate = endDate;
         this.memo = memo;
+    }
+
+    public ScheduleItem(String title, LocalDate startDate, LocalDate endDate, String memo, Long routineId) {
+        this(title, startDate, endDate, memo);
+        this.routineId = routineId;
     }
 
     @PrePersist
@@ -75,6 +83,10 @@ public class ScheduleItem {
 
     public String getMemo() {
         return memo;
+    }
+
+    public Long getRoutineId() {
+        return routineId;
     }
 
     public LocalDateTime getCreatedAt() {

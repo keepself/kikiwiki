@@ -753,6 +753,29 @@
   height: 16px;
 }
 
+.weekday-picker {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.weekday-picker__day {
+  flex: 1;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  padding: 0.5rem 0;
+  cursor: pointer;
+}
+
+.weekday-picker__day--selected {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: white;
+}
+
 .form-field label {
   font-size: 0.8125rem;
   font-weight: 700;
@@ -1202,6 +1225,31 @@
 
 .recurring-row__delete:hover {
   color: var(--color-accent-strong);
+}
+
+/* "이번 달 일정" / "고정 루틴" 목록 - recurring-list보다 미니멀하게 (테두리 박스/구분선 없이 여백으로 구분) */
+.schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.schedule-list__row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.375rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  transition: background 0.15s;
+}
+
+.schedule-list__row:hover {
+  background: var(--color-accent-subtle);
+}
+
+.schedule-list__row--past {
+  opacity: 0.45;
 }
 
 .row-menu-wrap {
@@ -1787,6 +1835,15 @@
 
 .gcal-chip--orange {
   background: var(--color-expense);
+}
+
+/* 고정 루틴에서 자동 생성된 항목 - 직접 등록한 일정보다 눈에 덜 띄고 살짝 작게 */
+.gcal-chip--routine {
+  opacity: 0.55;
+  font-weight: 600;
+  height: 12px;
+  line-height: 12px;
+  font-size: 0.5625rem;
 }
 
 .gcal-more {

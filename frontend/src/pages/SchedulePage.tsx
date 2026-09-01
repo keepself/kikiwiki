@@ -11,15 +11,30 @@ import {
   updateTodoItemStatus,
   fetchArchivedTodoItems,
   restoreTodoItem,
+  fetchRoutineItems,
+  createRoutineItem,
+  updateRoutineItem,
+  deleteRoutineItem,
 } from '../api/client';
 import type { ScheduleItem, ScheduleItemInput } from '../types/scheduleItem';
 import type { TodoItem, TodoItemInput, TodoStatus } from '../types/todoItem';
+import type { RoutineItem, RoutineItemInput } from '../types/routineItem';
 import { ScheduleCalendar } from '../components/ScheduleCalendar';
 import { TodoBoard } from '../components/TodoBoard';
 import { ScheduleItemForm } from '../components/ScheduleItemForm';
 import { TodoItemForm } from '../components/TodoItemForm';
+import { RoutineItemForm } from '../components/RoutineItemForm';
 import { Modal } from '../components/Modal';
 import { scheduleColorClass } from '../scheduleColor';
+
+const WEEKDAY_SHORT_LABELS = ['', '월', '화', '수', '목', '금', '토', '일']; // 인덱스 1~7이 ISO 요일 값
+
+function formatDaysOfWeek(daysOfWeek: number[]): string {
+  return [...daysOfWeek]
+    .sort((a, b) => a - b)
+    .map((d) => WEEKDAY_SHORT_LABELS[d])
+    .join('·');
+}
 
 function currentMonth(): string {
   const now = new Date();
@@ -109,7 +124,11 @@ export function SchedulePage() {
     }
   };
 
-  const sortedScheduleItems = [...scheduleItems].sort((a, b) => a.startDate.localeCompare(b.startDate));
+  // "이번 달 일정" 목록에는 고정 루틴에서 자동 생성된 항목은 빼고, 직접 등록한 일정만 보여줌
+  // (캘린더 막대에는 그대로 나옴 - scheduleItems를 그대로 씀)
+  const sortedScheduleItems = [...scheduleItems]
+    .filter((item) => item.routineId == null)
+    .sort((a, b) => a.startDate.localeCompare(b.startDate));
 
   // ---- 할 일 보드 (캘린더와 별개, 날짜 없이 상태로만 관리) ----
   const [todoItems, setTodoItems] = useState<TodoItem[]>([]);
@@ -198,6 +217,55 @@ export function SchedulePage() {
     }
   };
 
+  // ---- 고정 루틴 (요일 반복, 종료일 없음 - 실제 캘린더 일정은 조회 시점에 자동으로 채워짐) ----
+  const [routineItems, setRoutineItems] = useState<RoutineItem[]>([]);
+  const [showRoutineForm, setShowRoutineForm] = useState(false);
+  const [editingRoutineItem, setEditingRoutineItem] = useState<RoutineItem | null>(null);
+  const [openRoutineMenuId, setOpenRoutineMenuId] = useState<number | null>(null);
+
+  const loadRoutineItems = () => {
+    fetchRoutineItems()
+      .then(setRoutineItems)
+      .catch((err) => setError(err.message));
+  };
+
+  useEffect(() => {
+    loadRoutineItems();
+  }, []);
+
+  const handleRoutineCreate = async (input: RoutineItemInput) => {
+    try {
+      await createRoutineItem(input);
+      loadRoutineItems();
+      loadScheduleItems();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '고정 루틴 등록 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleRoutineUpdate = async (input: RoutineItemInput) => {
+    if (!editingRoutineItem) return;
+    try {
+      await updateRoutineItem(editingRoutineItem.id, input);
+      loadRoutineItems();
+      loadScheduleItems();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '고정 루틴 수정 중 오류가 발생했습니다.');
+    }
+  };
+
+  // 해지: 이 루틴에서 만들어졌던 캘린더 일정도 전부 같이 지워짐
+  const handleRoutineDelete = async (id: number) => {
+    if (!confirm('이 루틴을 해지할까요? (캘린더에 추가된 일정도 모두 같이 삭제돼요)')) return;
+    try {
+      await deleteRoutineItem(id);
+      loadRoutineItems();
+      loadScheduleItems();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '고정 루틴 해지 중 오류가 발생했습니다.');
+    }
+  };
+
   return (
     <div className="app">
       {error && <div className="error-banner">{error}</div>}
@@ -243,11 +311,11 @@ export function SchedulePage() {
             {sortedScheduleItems.length === 0 ? (
               <div className="empty-state">이 달엔 등록된 일정이 없어요.</div>
             ) : (
-              <div className="recurring-list">
+              <div className="schedule-list">
                 {sortedScheduleItems.map((item) => {
                   const isPast = item.endDate < todayStr();
                   return (
-                    <div className={`recurring-row ${isPast ? 'recurring-row--past' : ''}`} key={item.id}>
+                    <div className={`schedule-list__row ${isPast ? 'schedule-list__row--past' : ''}`} key={item.id}>
                       <div className="recurring-row__info">
                         <span className="recurring-row__name">
                           <span className={`schedule-color-dot schedule-color-dot--${scheduleColorClass(item.id)}`} />
@@ -297,6 +365,67 @@ export function SchedulePage() {
                     </div>
                   );
                 })}
+              </div>
+            )}
+          </div>
+
+          <div className="card section">
+            <div className="card-header-row">
+              <h2 className="section-title">고정 루틴</h2>
+              <button className="action-button" onClick={() => setShowRoutineForm(true)}>
+                + 루틴 추가
+              </button>
+            </div>
+
+            {routineItems.length === 0 ? (
+              <div className="empty-state">등록된 고정 루틴이 없어요.</div>
+            ) : (
+              <div className="schedule-list">
+                {routineItems.map((item) => (
+                  <div className="schedule-list__row" key={item.id}>
+                    <div className="recurring-row__info">
+                      <span className="recurring-row__name">{item.title}</span>
+                      <span className="recurring-row__category">
+                        매주 {formatDaysOfWeek(item.daysOfWeek)}
+                        {item.memo ? ` · ${item.memo}` : ''}
+                      </span>
+                    </div>
+                    <div className="row-menu-wrap">
+                      <button
+                        className="row-menu-trigger"
+                        aria-label="메뉴"
+                        onClick={() => setOpenRoutineMenuId((cur) => (cur === item.id ? null : item.id))}
+                      >
+                        ⋯
+                      </button>
+                      {openRoutineMenuId === item.id && (
+                        <>
+                          <div className="menu-backdrop" onClick={() => setOpenRoutineMenuId(null)} />
+                          <div className="row-menu-popover">
+                            <button
+                              className="row-menu-item"
+                              onClick={() => {
+                                setEditingRoutineItem(item);
+                                setOpenRoutineMenuId(null);
+                              }}
+                            >
+                              수정
+                            </button>
+                            <button
+                              className="row-menu-item row-menu-item--danger"
+                              onClick={() => {
+                                setOpenRoutineMenuId(null);
+                                handleRoutineDelete(item.id);
+                              }}
+                            >
+                              해지
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -371,9 +500,9 @@ export function SchedulePage() {
 
       {dayDetail && (
         <Modal title={dayDetail.date} onClose={() => setDayDetail(null)}>
-          <div className="recurring-list">
+          <div className="schedule-list">
             {dayDetail.items.map((item) => (
-              <div className="recurring-row" key={item.id}>
+              <div className="schedule-list__row" key={item.id}>
                 <div className="recurring-row__info">
                   <span className="recurring-row__name">
                     <span className={`schedule-color-dot schedule-color-dot--${scheduleColorClass(item.id)}`} />
@@ -381,15 +510,50 @@ export function SchedulePage() {
                   </span>
                   {item.memo && <span className="recurring-row__category">{item.memo}</span>}
                 </div>
-                <button
-                  className="recurring-row__edit"
-                  onClick={() => {
-                    setEditingScheduleItem(item);
-                    setDayDetail(null);
-                  }}
-                >
-                  수정
-                </button>
+                <div className="row-menu-wrap">
+                  <button
+                    className="row-menu-trigger"
+                    aria-label="메뉴"
+                    onClick={() => setOpenScheduleMenuId((cur) => (cur === item.id ? null : item.id))}
+                  >
+                    ⋯
+                  </button>
+                  {openScheduleMenuId === item.id && (
+                    <>
+                      <div className="menu-backdrop" onClick={() => setOpenScheduleMenuId(null)} />
+                      <div className="row-menu-popover">
+                        <button
+                          className="row-menu-item"
+                          onClick={() => {
+                            setOpenScheduleMenuId(null);
+                            setEditingScheduleItem(item);
+                            setDayDetail(null);
+                          }}
+                        >
+                          수정
+                        </button>
+                        <button
+                          className="row-menu-item row-menu-item--danger"
+                          onClick={async () => {
+                            setOpenScheduleMenuId(null);
+                            if (!confirm('이 일정을 삭제할까요?')) return;
+                            try {
+                              await deleteScheduleItem(item.id);
+                              loadScheduleItems();
+                              setDayDetail((cur) =>
+                                cur ? { ...cur, items: cur.items.filter((i) => i.id !== item.id) } : cur
+                              );
+                            } catch (err) {
+                              setError(err instanceof Error ? err.message : '일정 삭제 중 오류가 발생했습니다.');
+                            }
+                          }}
+                        >
+                          삭제
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -423,6 +587,16 @@ export function SchedulePage() {
               setEditingScheduleItem(null);
             }}
           />
+          <button
+            className="text-button"
+            onClick={async () => {
+              const id = editingScheduleItem.id;
+              setEditingScheduleItem(null);
+              await handleScheduleDelete(id);
+            }}
+          >
+            이 일정 삭제하기
+          </button>
         </Modal>
       )}
 
@@ -466,6 +640,34 @@ export function SchedulePage() {
           >
             이 할 일 삭제하기
           </button>
+        </Modal>
+      )}
+
+      {showRoutineForm && (
+        <Modal title="고정 루틴 추가" onClose={() => setShowRoutineForm(false)}>
+          <RoutineItemForm
+            onSubmit={async (input) => {
+              await handleRoutineCreate(input);
+              setShowRoutineForm(false);
+            }}
+          />
+        </Modal>
+      )}
+
+      {editingRoutineItem && (
+        <Modal title="고정 루틴 수정" onClose={() => setEditingRoutineItem(null)}>
+          <RoutineItemForm
+            submitLabel="수정하기"
+            initialValues={{
+              title: editingRoutineItem.title,
+              daysOfWeek: editingRoutineItem.daysOfWeek,
+              memo: editingRoutineItem.memo,
+            }}
+            onSubmit={async (input) => {
+              await handleRoutineUpdate(input);
+              setEditingRoutineItem(null);
+            }}
+          />
         </Modal>
       )}
     </div>

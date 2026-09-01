@@ -3,6 +3,7 @@ import type { WishlistItem, WishlistItemInput, WishlistPurchaseInput } from '../
 import type { RecurringItem, RecurringItemInput } from '../types/recurringItem';
 import type { ScheduleItem, ScheduleItemInput } from '../types/scheduleItem';
 import type { TodoItem, TodoItemInput, TodoStatus } from '../types/todoItem';
+import type { RoutineItem, RoutineItemInput } from '../types/routineItem';
 import { getToken, clearToken } from '../auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -475,4 +476,58 @@ export async function restoreTodoItem(id: number): Promise<TodoItem> {
   }
 
   return response.json();
+}
+
+export async function fetchRoutineItems(): Promise<RoutineItem[]> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/routine-items`);
+
+  if (!response.ok) {
+    throw new Error(`고정 루틴 조회 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function createRoutineItem(input: RoutineItemInput): Promise<RoutineItem> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/routine-items`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+
+  if (response.status === 409) {
+    throw new Error('이미 같은 이름의 루틴이 있어요.');
+  }
+  if (!response.ok) {
+    throw new Error(`고정 루틴 등록 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function updateRoutineItem(id: number, input: RoutineItemInput): Promise<RoutineItem> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/routine-items/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+
+  if (response.status === 409) {
+    throw new Error('이미 같은 이름의 루틴이 있어요.');
+  }
+  if (!response.ok) {
+    throw new Error(`고정 루틴 수정 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function deleteRoutineItem(id: number): Promise<void> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/routine-items/${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error(`고정 루틴 해지 실패: ${response.status}`);
+  }
 }

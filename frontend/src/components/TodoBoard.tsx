@@ -10,7 +10,16 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from '@dnd-kit/core';
+import confetti from 'canvas-confetti';
 import type { TodoItem, TodoStatus } from '../types/todoItem';
+
+function celebrateCompletion() {
+  confetti({
+    particleCount: 100,
+    spread: 70,
+    origin: { y: 0.6 },
+  });
+}
 
 interface Props {
   items: TodoItem[];
@@ -131,6 +140,9 @@ export function TodoBoard({ items, onStatusChange, onEdit, onAddClick, onArchive
     const item = items.find((i) => i.id === active.id);
     if (item && item.status !== newStatus) {
       onStatusChange(item.id, newStatus);
+      if (newStatus === 'DONE') {
+        celebrateCompletion();
+      }
     }
   };
 

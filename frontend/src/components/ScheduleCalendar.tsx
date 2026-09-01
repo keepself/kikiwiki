@@ -82,7 +82,9 @@ export function ScheduleCalendar({ month, items, selectedDate, onSelectDate, onE
                 return (
                   <span
                     key={item.id}
-                    className={`gcal-chip gcal-chip--${scheduleColorClass(item.id)} ${shape}`}
+                    className={`gcal-chip gcal-chip--${scheduleColorClass(item.id)} ${shape} ${
+                      item.routineId != null ? 'gcal-chip--routine' : ''
+                    }`}
                     onClick={(e) => {
                       e.stopPropagation();
                       onEditItem(item);

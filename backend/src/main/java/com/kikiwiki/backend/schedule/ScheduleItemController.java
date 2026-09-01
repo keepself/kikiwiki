@@ -15,9 +15,28 @@ import java.util.List;
 public class ScheduleItemController {
 
     private final ScheduleItemRepository scheduleItemRepository;
+    private final RoutineItemRepository routineItemRepository;
 
-    public ScheduleItemController(ScheduleItemRepository scheduleItemRepository) {
+    public ScheduleItemController(ScheduleItemRepository scheduleItemRepository, RoutineItemRepository routineItemRepository) {
         this.scheduleItemRepository = scheduleItemRepository;
+        this.routineItemRepository = routineItemRepository;
+    }
+
+    // 활성 루틴들의 요일 패턴에 맞는 날짜에 대해, 아직 생성된 적 없는 경우에만 ScheduleItem을 채워 넣음
+    // (스케줄러 없이, 그 달을 조회하는 시점에 필요한 만큼만 생성)
+    private void generateRoutineOccurrences(LocalDate monthStart, LocalDate monthEnd) {
+        List<RoutineItem> routines = routineItemRepository.findAllByDeletedAtIsNullOrderByCreatedAtDesc();
+        if (routines.isEmpty()) return;
+
+        for (RoutineItem routine : routines) {
+            var days = routine.getDaysOfWeekSet();
+            for (LocalDate date = monthStart; !date.isAfter(monthEnd); date = date.plusDays(1)) {
+                if (!days.contains(date.getDayOfWeek())) continue;
+                if (scheduleItemRepository.existsByRoutineIdAndStartDate(routine.getId(), date)) continue;
+
+                scheduleItemRepository.save(new ScheduleItem(routine.getTitle(), date, date, routine.getMemo(), routine.getId()));
+            }
+        }
     }
 
     private void validateDateRange(ScheduleItemRequest request) {
@@ -45,6 +64,8 @@ public class ScheduleItemController {
         YearMonth yearMonth = parseYearMonthOrThrow(month);
         LocalDate start = yearMonth.atDay(1);
         LocalDate end = yearMonth.atEndOfMonth();
+
+        generateRoutineOccurrences(start, end);
 
         return scheduleItemRepository.findAllOverlapping(start, end)
                 .stream()

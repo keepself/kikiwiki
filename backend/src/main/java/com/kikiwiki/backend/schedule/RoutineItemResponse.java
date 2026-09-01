@@ -1,25 +1,22 @@
 package com.kikiwiki.backend.schedule;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-public class ScheduleItemResponse {
+public class RoutineItemResponse {
 
     private Long id;
     private String title;
-    private LocalDate startDate;
-    private LocalDate endDate;
+    private Set<Integer> daysOfWeek;
     private String memo;
-    private Long routineId;
     private LocalDateTime createdAt;
 
-    public ScheduleItemResponse(ScheduleItem item) {
+    public RoutineItemResponse(RoutineItem item) {
         this.id = item.getId();
         this.title = item.getTitle();
-        this.startDate = item.getStartDate();
-        this.endDate = item.getEndDate();
+        this.daysOfWeek = item.getDaysOfWeekSet().stream().map(java.time.DayOfWeek::getValue).collect(Collectors.toSet());
         this.memo = item.getMemo();
-        this.routineId = item.getRoutineId();
         this.createdAt = item.getCreatedAt();
     }
 
@@ -31,20 +28,12 @@ public class ScheduleItemResponse {
         return title;
     }
 
-    public LocalDate getStartDate() {
-        return startDate;
-    }
-
-    public LocalDate getEndDate() {
-        return endDate;
+    public Set<Integer> getDaysOfWeek() {
+        return daysOfWeek;
     }
 
     public String getMemo() {
         return memo;
-    }
-
-    public Long getRoutineId() {
-        return routineId;
     }
 
     public LocalDateTime getCreatedAt() {
