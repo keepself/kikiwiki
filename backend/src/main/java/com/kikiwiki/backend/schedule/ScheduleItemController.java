@@ -1,5 +1,8 @@
 package com.kikiwiki.backend.schedule;
 
+import jakarta.validation.Valid;
+
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,22 +37,23 @@ public class ScheduleItemController {
                 if (!days.contains(date.getDayOfWeek())) continue;
                 if (scheduleItemRepository.existsByRoutineIdAndStartDate(routine.getId(), date)) continue;
 
-                scheduleItemRepository.save(new ScheduleItem(routine.getTitle(), date, date, routine.getMemo(), routine.getId()));
+                try {
+                    scheduleItemRepository.save(new ScheduleItem(routine.getTitle(), date, date, routine.getMemo(), routine.getId()));
+                } catch (DataIntegrityViolationException e) {
+                    // 동시에 들어온 다른 요청이 이미 같은 날짜를 만들었으면(유니크 제약 위반) 그냥 넘어감
+                }
             }
         }
     }
 
     private void validateDateRange(ScheduleItemRequest request) {
-        if (request.getStartDate() == null || request.getEndDate() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "시작일/종료일이 필요합니다.");
-        }
         if (request.getEndDate().isBefore(request.getStartDate())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "종료일은 시작일보다 빠를 수 없습니다.");
         }
     }
 
     @PostMapping
-    public ResponseEntity<ScheduleItemResponse> create(@RequestBody ScheduleItemRequest request) {
+    public ResponseEntity<ScheduleItemResponse> create(@Valid @RequestBody ScheduleItemRequest request) {
         validateDateRange(request);
 
         ScheduleItem item = new ScheduleItem(request.getTitle(), request.getStartDate(), request.getEndDate(), request.getMemo());
@@ -82,7 +86,7 @@ public class ScheduleItemController {
     }
 
     @PutMapping("/{id}")
-    public ScheduleItemResponse update(@PathVariable("id") Long id, @RequestBody ScheduleItemRequest request) {
+    public ScheduleItemResponse update(@PathVariable("id") Long id, @Valid @RequestBody ScheduleItemRequest request) {
         validateDateRange(request);
 
         ScheduleItem item = scheduleItemRepository.findByIdAndDeletedAtIsNull(id)

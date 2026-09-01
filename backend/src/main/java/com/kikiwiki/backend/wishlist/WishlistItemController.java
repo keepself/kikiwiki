@@ -5,6 +5,7 @@ import com.kikiwiki.backend.category.CategoryRepository;
 import com.kikiwiki.backend.transaction.Transaction;
 import com.kikiwiki.backend.transaction.TransactionRepository;
 import com.kikiwiki.backend.transaction.TransactionType;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -44,7 +45,7 @@ public class WishlistItemController {
     }
 
     @PostMapping
-    public ResponseEntity<WishlistItemResponse> create(@RequestBody WishlistItemRequest request) {
+    public ResponseEntity<WishlistItemResponse> create(@Valid @RequestBody WishlistItemRequest request) {
         WishlistItem item = new WishlistItem(
                 request.getName(),
                 request.getPrice(),
@@ -67,7 +68,7 @@ public class WishlistItemController {
     }
 
     @PutMapping("/{id}")
-    public WishlistItemResponse update(@PathVariable("id") Long id, @RequestBody WishlistItemRequest request) {
+    public WishlistItemResponse update(@PathVariable("id") Long id, @Valid @RequestBody WishlistItemRequest request) {
         WishlistItem item = wishlistItemRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "위시리스트 항목을 찾을 수 없습니다: " + id));
 

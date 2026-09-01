@@ -2,8 +2,11 @@ package com.kikiwiki.backend.todo;
 
 import com.kikiwiki.backend.schedule.ScheduleItemRepository;
 
+import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -22,7 +25,7 @@ public class TodoItemController {
     }
 
     @PostMapping
-    public ResponseEntity<TodoItemResponse> create(@RequestBody TodoItemRequest request) {
+    public ResponseEntity<TodoItemResponse> create(@Valid @RequestBody TodoItemRequest request) {
         TodoItem item = new TodoItem(request.getTitle(), request.getMemo(), request.getLinkedScheduleItemId());
         TodoItem saved = todoItemRepository.save(item);
 
@@ -38,7 +41,7 @@ public class TodoItemController {
     }
 
     @PutMapping("/{id}")
-    public TodoItemResponse update(@PathVariable("id") Long id, @RequestBody TodoItemRequest request) {
+    public TodoItemResponse update(@PathVariable("id") Long id, @Valid @RequestBody TodoItemRequest request) {
         TodoItem item = todoItemRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "할 일을 찾을 수 없습니다: " + id));
 
@@ -50,11 +53,7 @@ public class TodoItemController {
 
     // 칸반 보드에서 드래그로 상태만 바꿀 때
     @PatchMapping("/{id}/status")
-    public TodoItemResponse updateStatus(@PathVariable("id") Long id, @RequestBody TodoStatusRequest request) {
-        if (request.getStatus() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "상태 값이 필요합니다.");
-        }
-
+    public TodoItemResponse updateStatus(@PathVariable("id") Long id, @Valid @RequestBody TodoStatusRequest request) {
         TodoItem item = todoItemRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "할 일을 찾을 수 없습니다: " + id));
 
@@ -66,6 +65,8 @@ public class TodoItemController {
 
     // cascadeSchedule=false(기본): 보관 - 할 일만 소프트 삭제.
     // cascadeSchedule=true: 진짜 삭제 - 연결된 캘린더 일정이 있으면 그것도 같이 소프트 삭제.
+    // (두 건을 지우는 작업이라 @Transactional로 묶어서, 중간에 실패하면 전부 롤백되게 함)
+    @Transactional
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
             @PathVariable("id") Long id,

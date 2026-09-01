@@ -7,6 +7,8 @@ import com.kikiwiki.backend.transaction.TransactionRepository;
 import com.kikiwiki.backend.transaction.TransactionResponse;
 import com.kikiwiki.backend.transaction.TransactionType;
 
+import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -46,7 +48,7 @@ public class RecurringItemController {
     }
 
     @PostMapping
-    public ResponseEntity<RecurringItemResponse> create(@RequestBody RecurringItemRequest request) {
+    public ResponseEntity<RecurringItemResponse> create(@Valid @RequestBody RecurringItemRequest request) {
         Category category = getFixedCategoryOrThrow();
 
         RecurringItem item = new RecurringItem(request.getName(), request.getAmount(), request.getDayOfMonth(), category);
@@ -94,7 +96,7 @@ public class RecurringItemController {
     }
 
     @PutMapping("/{id}")
-    public RecurringItemResponse update(@PathVariable("id") Long id, @RequestBody RecurringItemRequest request) {
+    public RecurringItemResponse update(@PathVariable("id") Long id, @Valid @RequestBody RecurringItemRequest request) {
         RecurringItem item = recurringItemRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "고정지출 항목을 찾을 수 없습니다: " + id));
 

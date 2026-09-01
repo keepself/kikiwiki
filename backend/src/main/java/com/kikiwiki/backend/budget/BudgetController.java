@@ -1,8 +1,8 @@
 package com.kikiwiki.backend.budget;
 
-import org.springframework.http.HttpStatus;
+import jakarta.validation.Valid;
+
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/budget")
@@ -27,11 +27,7 @@ public class BudgetController {
     }
 
     @PutMapping
-    public BudgetResponse update(@RequestParam("month") String month, @RequestBody BudgetRequest request) {
-        if (request.getAmount() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "예산 금액이 필요합니다.");
-        }
-
+    public BudgetResponse update(@RequestParam("month") String month, @Valid @RequestBody BudgetRequest request) {
         MonthlyBudget budget = getOrCreate(month);
         budget.updateAmount(request.getAmount());
         MonthlyBudget saved = monthlyBudgetRepository.save(budget);

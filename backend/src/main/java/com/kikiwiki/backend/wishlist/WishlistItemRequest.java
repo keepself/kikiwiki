@@ -1,10 +1,16 @@
 package com.kikiwiki.backend.wishlist;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+
 import java.math.BigDecimal;
 
 public class WishlistItemRequest {
 
+    @NotBlank(message = "이름은 필수입니다.")
     private String name;
+
+    @Positive(message = "가격은 0보다 커야 합니다.")
     private BigDecimal price;
     private String imageUrl;
     private String productUrl;

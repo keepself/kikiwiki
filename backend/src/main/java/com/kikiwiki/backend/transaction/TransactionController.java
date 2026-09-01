@@ -5,6 +5,8 @@ import com.kikiwiki.backend.category.CategoryRepository;
 import com.kikiwiki.backend.wishlist.WishlistItem;
 import com.kikiwiki.backend.wishlist.WishlistItemRepository;
 
+import jakarta.validation.Valid;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -40,7 +42,7 @@ public class TransactionController {
     }
 
     @PostMapping
-    public ResponseEntity<TransactionResponse> create(@RequestBody TransactionRequest request) {
+    public ResponseEntity<TransactionResponse> create(@Valid @RequestBody TransactionRequest request) {
         Category category = getCategoryOrThrow(request.getCategoryId());
 
         Transaction transaction = new Transaction(
@@ -111,7 +113,7 @@ public class TransactionController {
     }
 
     @PutMapping("/{id}")
-    public TransactionResponse update(@PathVariable("id") Long id, @RequestBody TransactionRequest request) {
+    public TransactionResponse update(@PathVariable("id") Long id, @Valid @RequestBody TransactionRequest request) {
         Transaction transaction = transactionRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "거래를 찾을 수 없습니다: " + id));
 
