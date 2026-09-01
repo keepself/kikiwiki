@@ -1,6 +1,8 @@
 import type { Category, Transaction, TransactionInput, TransactionPage, TransactionType } from '../types/transaction';
 import type { WishlistItem, WishlistItemInput, WishlistPurchaseInput } from '../types/wishlist';
 import type { RecurringItem, RecurringItemInput } from '../types/recurringItem';
+import type { ScheduleItem, ScheduleItemInput } from '../types/scheduleItem';
+import type { TodoItem, TodoItemInput, TodoStatus } from '../types/todoItem';
 import { getToken, clearToken } from '../auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -299,19 +301,23 @@ export async function applyRecurringItem(id: number, month: string): Promise<Tra
   return response.json();
 }
 
-export async function fetchBudget(): Promise<number | null> {
-  const response = await authorizedFetch(`${API_BASE_URL}/api/budget`);
+export interface BudgetInfo {
+  amount: number | null;
+  savingsModeEnabled: boolean;
+}
+
+export async function fetchBudget(month: string): Promise<BudgetInfo> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/budget?month=${month}`);
 
   if (!response.ok) {
     throw new Error(`예산 조회 실패: ${response.status}`);
   }
 
-  const data: { amount: number | null } = await response.json();
-  return data.amount;
+  return response.json();
 }
 
-export async function updateBudget(amount: number): Promise<number | null> {
-  const response = await authorizedFetch(`${API_BASE_URL}/api/budget`, {
+export async function updateBudget(month: string, amount: number): Promise<BudgetInfo> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/budget?month=${month}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ amount }),
@@ -321,6 +327,152 @@ export async function updateBudget(amount: number): Promise<number | null> {
     throw new Error(`예산 저장 실패: ${response.status}`);
   }
 
-  const data: { amount: number | null } = await response.json();
-  return data.amount;
+  return response.json();
+}
+
+export async function updateSavingsMode(month: string, enabled: boolean): Promise<BudgetInfo> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/budget/savings-mode?month=${month}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ enabled }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`절약모드 저장 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function fetchScheduleItems(month: string): Promise<ScheduleItem[]> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/schedule-items?month=${month}`);
+
+  if (!response.ok) {
+    throw new Error(`일정 조회 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function createScheduleItem(input: ScheduleItemInput): Promise<ScheduleItem> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/schedule-items`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error(`일정 등록 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function updateScheduleItem(id: number, input: ScheduleItemInput): Promise<ScheduleItem> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/schedule-items/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error(`일정 수정 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function deleteScheduleItem(id: number): Promise<void> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/schedule-items/${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error(`일정 삭제 실패: ${response.status}`);
+  }
+}
+
+export async function fetchTodoItems(): Promise<TodoItem[]> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/todo-items`);
+
+  if (!response.ok) {
+    throw new Error(`할 일 조회 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function createTodoItem(input: TodoItemInput): Promise<TodoItem> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/todo-items`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error(`할 일 등록 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function updateTodoItem(id: number, input: TodoItemInput): Promise<TodoItem> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/todo-items/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error(`할 일 수정 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function deleteTodoItem(id: number, cascadeSchedule = false): Promise<void> {
+  const response = await authorizedFetch(
+    `${API_BASE_URL}/api/todo-items/${id}?cascadeSchedule=${cascadeSchedule}`,
+    { method: 'DELETE' }
+  );
+
+  if (!response.ok) {
+    throw new Error(`할 일 삭제 실패: ${response.status}`);
+  }
+}
+
+export async function updateTodoItemStatus(id: number, status: TodoStatus): Promise<TodoItem> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/todo-items/${id}/status`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`할 일 상태 변경 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function fetchArchivedTodoItems(): Promise<TodoItem[]> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/todo-items/archived`);
+
+  if (!response.ok) {
+    throw new Error(`보관함 조회 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function restoreTodoItem(id: number): Promise<TodoItem> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/todo-items/${id}/restore`, {
+    method: 'POST',
+  });
+
+  if (!response.ok) {
+    throw new Error(`할 일 복원 실패: ${response.status}`);
+  }
+
+  return response.json();
 }

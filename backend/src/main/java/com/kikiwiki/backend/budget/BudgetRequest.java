@@ -1,4 +1,4 @@
-package com.kikiwiki.backend.user;
+package com.kikiwiki.backend.budget;
 
 import java.math.BigDecimal;
 

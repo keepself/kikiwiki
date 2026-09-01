@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import type { Transaction } from '../types/transaction';
-import { fetchBudget, updateBudget } from '../api/client';
+import { fetchBudget, updateBudget, updateSavingsMode } from '../api/client';
 
 interface Props {
+  month: string;
   transactions: Transaction[];
   previousMonthTransactions: Transaction[];
 }
@@ -11,14 +12,20 @@ function sumByType(transactions: Transaction[], type: Transaction['type']): numb
   return transactions.filter((t) => t.type === type).reduce((sum, t) => sum + t.amount, 0);
 }
 
-export function SummaryCard({ transactions, previousMonthTransactions }: Props) {
+export function SummaryCard({ month, transactions, previousMonthTransactions }: Props) {
   const [savingsMode, setSavingsMode] = useState(false);
   const [budget, setBudget] = useState<number | null>(null);
   const [budgetInput, setBudgetInput] = useState('');
 
   useEffect(() => {
-    fetchBudget().then(setBudget).catch(() => {});
-  }, []);
+    fetchBudget(month)
+      .then((info) => {
+        setBudget(info.amount);
+        setSavingsMode(info.savingsModeEnabled);
+      })
+      .catch(() => {});
+    setBudgetInput('');
+  }, [month]);
 
   const totalIncome = sumByType(transactions, 'INCOME');
   const totalExpense = sumByType(transactions, 'EXPENSE');
@@ -32,14 +39,24 @@ export function SummaryCard({ transactions, previousMonthTransactions }: Props) 
   // 지난달보다 더 썼으면 울고, 덜 썼으면(또는 비교할 지난달 기록이 없으면) 웃음
   const face = hasPreviousData && spentMore ? '😢' : '😊';
 
+  const handleToggleSavingsMode = async () => {
+    const next = !savingsMode;
+    setSavingsMode(next); // 낙관적 업데이트
+    try {
+      await updateSavingsMode(month, next);
+    } catch {
+      setSavingsMode(!next); // 저장 실패하면 되돌림
+    }
+  };
+
   const handleSaveBudget = async () => {
     const amount = Number(budgetInput);
     if (!budgetInput || !Number.isFinite(amount) || amount <= 0) {
       alert('올바른 예산 금액을 입력해주세요.');
       return;
     }
-    const saved = await updateBudget(amount);
-    setBudget(saved);
+    const saved = await updateBudget(month, amount);
+    setBudget(saved.amount);
     setBudgetInput('');
   };
 
@@ -52,7 +69,7 @@ export function SummaryCard({ transactions, previousMonthTransactions }: Props) 
           <span className="toggle-switch-group__label">절약모드</span>
           <button
             className={`toggle-switch ${savingsMode ? 'toggle-switch--on' : ''}`}
-            onClick={() => setSavingsMode((v) => !v)}
+            onClick={handleToggleSavingsMode}
             aria-label="절약 모드 전환"
           >
             <span className="toggle-switch__knob" />

@@ -49,7 +49,7 @@ export function TransactionList({
   onDelete,
 }: Props) {
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [openActionsId, setOpenActionsId] = useState<number | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
 
   const handleDelete = async (id: number) => {
     if (confirm('이 거래를 삭제할까요?')) {
@@ -105,31 +105,40 @@ export function TransactionList({
                   {t.amount.toLocaleString()}원
                 </div>
 
-                {openActionsId === t.id ? (
-                  <div className="transaction-row__actions">
-                    <button className="action-button" onClick={() => setEditingId(t.id)}>
-                      수정
-                    </button>
-                    <button className="action-button" onClick={() => handleDelete(t.id)}>
-                      삭제
-                    </button>
-                    <button
-                      className="transaction-row__chevron transaction-row__chevron--open"
-                      onClick={() => setOpenActionsId(null)}
-                      aria-label="닫기"
-                    >
-                      ›
-                    </button>
-                  </div>
-                ) : (
+                <div className="row-menu-wrap">
                   <button
-                    className="transaction-row__chevron"
-                    onClick={() => setOpenActionsId(t.id)}
-                    aria-label="더보기"
+                    className="row-menu-trigger"
+                    aria-label="메뉴"
+                    onClick={() => setOpenMenuId((cur) => (cur === t.id ? null : t.id))}
                   >
-                    ›
+                    ⋯
                   </button>
-                )}
+                  {openMenuId === t.id && (
+                    <>
+                      <div className="menu-backdrop" onClick={() => setOpenMenuId(null)} />
+                      <div className="row-menu-popover">
+                        <button
+                          className="row-menu-item"
+                          onClick={() => {
+                            setEditingId(t.id);
+                            setOpenMenuId(null);
+                          }}
+                        >
+                          수정
+                        </button>
+                        <button
+                          className="row-menu-item row-menu-item--danger"
+                          onClick={() => {
+                            setOpenMenuId(null);
+                            handleDelete(t.id);
+                          }}
+                        >
+                          삭제
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             )
           )}
