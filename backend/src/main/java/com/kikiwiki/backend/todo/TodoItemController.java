@@ -26,7 +26,7 @@ public class TodoItemController {
 
     @PostMapping
     public ResponseEntity<TodoItemResponse> create(@Valid @RequestBody TodoItemRequest request) {
-        TodoItem item = new TodoItem(request.getTitle(), request.getMemo(), request.getLinkedScheduleItemId());
+        TodoItem item = new TodoItem(request.getTitle(), request.getMemo(), request.getDueDate(), request.getLinkedScheduleItemId());
         TodoItem saved = todoItemRepository.save(item);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(new TodoItemResponse(saved));
@@ -45,7 +45,7 @@ public class TodoItemController {
         TodoItem item = todoItemRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "할 일을 찾을 수 없습니다: " + id));
 
-        item.update(request.getTitle(), request.getMemo());
+        item.update(request.getTitle(), request.getMemo(), request.getDueDate());
         TodoItem updated = todoItemRepository.save(item);
 
         return new TodoItemResponse(updated);

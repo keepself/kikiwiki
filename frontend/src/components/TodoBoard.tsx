@@ -21,6 +21,30 @@ function celebrateCompletion() {
   });
 }
 
+function todayStr(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+}
+
+// "D-3", "D-DAY", "D+2"(지남) 형태로 표시
+function formatDDay(dueDate: string): string {
+  const diffDays = Math.round(
+    (new Date(dueDate).getTime() - new Date(todayStr()).getTime()) / (1000 * 60 * 60 * 24)
+  );
+  if (diffDays === 0) return 'D-DAY';
+  return diffDays > 0 ? `D-${diffDays}` : `D+${Math.abs(diffDays)}`;
+}
+
+// 마감기한이 가까운(또는 지난) 카드가 위로 오게 정렬 - 마감기한 없는 카드는 맨 아래
+function sortByDueDate(items: TodoItem[]): TodoItem[] {
+  return [...items].sort((a, b) => {
+    if (!a.dueDate && !b.dueDate) return 0;
+    if (!a.dueDate) return 1;
+    if (!b.dueDate) return -1;
+    return a.dueDate.localeCompare(b.dueDate);
+  });
+}
+
 interface Props {
   items: TodoItem[];
   onStatusChange: (id: number, status: TodoStatus) => void;
@@ -36,9 +60,18 @@ const COLUMNS: { status: TodoStatus; label: string }[] = [
 ];
 
 function CardContent({ item }: { item: TodoItem }) {
+  const isOverdue = item.dueDate != null && item.dueDate < todayStr() && item.status !== 'DONE';
+
   return (
     <span className="board-card__body">
-      <span className="board-card__title">{item.title}</span>
+      <span className="board-card__title-row">
+        <span className="board-card__title">{item.title}</span>
+        {item.dueDate && (
+          <span className={`board-card__dday ${isOverdue ? 'board-card__dday--overdue' : ''}`}>
+            {formatDDay(item.dueDate)}
+          </span>
+        )}
+      </span>
       {item.memo && <span className="board-card__memo">{item.memo}</span>}
     </span>
   );
@@ -154,7 +187,7 @@ export function TodoBoard({ items, onStatusChange, onEdit, onAddClick, onArchive
             key={col.status}
             status={col.status}
             label={col.label}
-            items={items.filter((item) => item.status === col.status)}
+            items={sortByDueDate(items.filter((item) => item.status === col.status))}
             onEdit={onEdit}
             onArchive={onArchive}
             onAddClick={col.status === 'TODO' ? onAddClick : undefined}

@@ -11,6 +11,7 @@ export function TodoItemForm({ initialValues, submitLabel, onSubmit }: Props) {
   const isEditing = !!initialValues;
   const [title, setTitle] = useState(initialValues?.title ?? '');
   const [memo, setMemo] = useState(initialValues?.memo ?? '');
+  const [dueDate, setDueDate] = useState(initialValues?.dueDate ?? '');
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -23,11 +24,12 @@ export function TodoItemForm({ initialValues, submitLabel, onSubmit }: Props) {
 
     setSubmitting(true);
     try {
-      await onSubmit({ title, memo: memo || null });
+      await onSubmit({ title, memo: memo || null, dueDate: dueDate || null });
 
       if (!isEditing) {
         setTitle('');
         setMemo('');
+        setDueDate('');
       }
     } finally {
       setSubmitting(false);
@@ -39,6 +41,11 @@ export function TodoItemForm({ initialValues, submitLabel, onSubmit }: Props) {
       <div className="form-field">
         <label>제목</label>
         <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="예: 보고서 작성" />
+      </div>
+
+      <div className="form-field">
+        <label>마감기한 (선택)</label>
+        <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
       </div>
 
       <div className="form-field">

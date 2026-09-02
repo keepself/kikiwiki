@@ -615,7 +615,7 @@ export function SchedulePage() {
         <Modal title="할 일 수정" onClose={() => setEditingTodoItem(null)}>
           <TodoItemForm
             submitLabel="수정하기"
-            initialValues={{ title: editingTodoItem.title, memo: editingTodoItem.memo }}
+            initialValues={{ title: editingTodoItem.title, memo: editingTodoItem.memo, dueDate: editingTodoItem.dueDate }}
             onSubmit={async (input) => {
               await handleTodoUpdate(input);
               setEditingTodoItem(null);

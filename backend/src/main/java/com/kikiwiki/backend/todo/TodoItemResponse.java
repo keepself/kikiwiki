@@ -1,5 +1,6 @@
 package com.kikiwiki.backend.todo;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class TodoItemResponse {
@@ -7,6 +8,7 @@ public class TodoItemResponse {
     private Long id;
     private String title;
     private String memo;
+    private LocalDate dueDate;
     private Long linkedScheduleItemId;
     private TodoStatus status;
     private LocalDateTime createdAt;
@@ -16,6 +18,7 @@ public class TodoItemResponse {
         this.id = item.getId();
         this.title = item.getTitle();
         this.memo = item.getMemo();
+        this.dueDate = item.getDueDate();
         this.linkedScheduleItemId = item.getLinkedScheduleItemId();
         this.status = item.getStatus();
         this.createdAt = item.getCreatedAt();
@@ -32,6 +35,10 @@ public class TodoItemResponse {
 
     public String getMemo() {
         return memo;
+    }
+
+    public LocalDate getDueDate() {
+        return dueDate;
     }
 
     public Long getLinkedScheduleItemId() {

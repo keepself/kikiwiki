@@ -2,6 +2,7 @@ package com.kikiwiki.backend.todo;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 // 캘린더 일정과는 완전히 별개 - 날짜에 묶이지 않고 진행 상태(칸반)로만 관리되는 할 일
@@ -17,6 +18,9 @@ public class TodoItem {
     private String title;
 
     private String memo;
+
+    // 마감기한 (선택) - 캘린더 일정과 무관하게 이 할 일 자체의 기한. 카드에 D-day로 표시됨
+    private LocalDate dueDate;
 
     // 캘린더 일정 등록 화면의 "할 일 보드에도 추가" 체크박스로 만들어진 경우, 그 일정의 id.
     // 직접 만든 할 일은 null - 보관과 달리 "삭제"할 땐 이 값을 따라 캘린더 쪽도 같이 지움
@@ -36,9 +40,10 @@ public class TodoItem {
     protected TodoItem() {
     }
 
-    public TodoItem(String title, String memo, Long linkedScheduleItemId) {
+    public TodoItem(String title, String memo, LocalDate dueDate, Long linkedScheduleItemId) {
         this.title = title;
         this.memo = memo;
+        this.dueDate = dueDate;
         this.linkedScheduleItemId = linkedScheduleItemId;
     }
 
@@ -47,9 +52,10 @@ public class TodoItem {
         this.createdAt = LocalDateTime.now();
     }
 
-    public void update(String title, String memo) {
+    public void update(String title, String memo, LocalDate dueDate) {
         this.title = title;
         this.memo = memo;
+        this.dueDate = dueDate;
     }
 
     public void updateStatus(TodoStatus status) {
@@ -76,6 +82,10 @@ public class TodoItem {
 
     public String getMemo() {
         return memo;
+    }
+
+    public LocalDate getDueDate() {
+        return dueDate;
     }
 
     public Long getLinkedScheduleItemId() {

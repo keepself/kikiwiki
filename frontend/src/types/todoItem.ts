@@ -4,6 +4,7 @@ export interface TodoItem {
   id: number;
   title: string;
   memo: string | null;
+  dueDate: string | null;
   linkedScheduleItemId: number | null;
   status: TodoStatus;
   createdAt: string;
@@ -13,5 +14,6 @@ export interface TodoItem {
 export interface TodoItemInput {
   title: string;
   memo: string | null;
+  dueDate?: string | null;
   linkedScheduleItemId?: number;
 }

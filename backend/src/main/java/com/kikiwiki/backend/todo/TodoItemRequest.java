@@ -2,12 +2,15 @@ package com.kikiwiki.backend.todo;
 
 import jakarta.validation.constraints.NotBlank;
 
+import java.time.LocalDate;
+
 public class TodoItemRequest {
 
     @NotBlank(message = "제목은 필수입니다.")
     private String title;
 
     private String memo;
+    private LocalDate dueDate;
     private Long linkedScheduleItemId;
 
     public String getTitle() {
@@ -24,6 +27,14 @@ public class TodoItemRequest {
 
     public void setMemo(String memo) {
         this.memo = memo;
+    }
+
+    public LocalDate getDueDate() {
+        return dueDate;
+    }
+
+    public void setDueDate(LocalDate dueDate) {
+        this.dueDate = dueDate;
     }
 
     public Long getLinkedScheduleItemId() {
