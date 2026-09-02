@@ -4,6 +4,7 @@ import type { RecurringItem, RecurringItemInput } from '../types/recurringItem';
 import type { ScheduleItem, ScheduleItemInput } from '../types/scheduleItem';
 import type { TodoItem, TodoItemInput, TodoStatus } from '../types/todoItem';
 import type { RoutineItem, RoutineItemInput } from '../types/routineItem';
+import type { AppNotification } from '../types/notification';
 import { getToken, clearToken } from '../auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -529,5 +530,61 @@ export async function deleteRoutineItem(id: number): Promise<void> {
 
   if (!response.ok) {
     throw new Error(`고정 루틴 해지 실패: ${response.status}`);
+  }
+}
+
+export async function sendDigestNow(): Promise<{ sent: boolean }> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/digest/send-now`, {
+    method: 'POST',
+  });
+
+  if (!response.ok) {
+    throw new Error(`알림 발송 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function fetchNotifications(): Promise<AppNotification[]> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/notifications`);
+
+  if (!response.ok) {
+    throw new Error(`알림 조회 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function markNotificationRead(id: number): Promise<AppNotification> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/notifications/${id}/read`, {
+    method: 'PATCH',
+  });
+
+  if (!response.ok) {
+    throw new Error(`알림 읽음 처리 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function markAllNotificationsRead(): Promise<AppNotification[]> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/notifications/read-all`, {
+    method: 'POST',
+  });
+
+  if (!response.ok) {
+    throw new Error(`알림 전체 읽음 처리 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function deleteNotification(id: number): Promise<void> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/notifications/${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error(`알림 삭제 실패: ${response.status}`);
   }
 }

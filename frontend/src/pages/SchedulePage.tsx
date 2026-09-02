@@ -15,6 +15,7 @@ import {
   createRoutineItem,
   updateRoutineItem,
   deleteRoutineItem,
+  sendDigestNow,
 } from '../api/client';
 import type { ScheduleItem, ScheduleItemInput } from '../types/scheduleItem';
 import type { TodoItem, TodoItemInput, TodoStatus } from '../types/todoItem';
@@ -67,6 +68,7 @@ export function SchedulePage() {
   const [editingScheduleItem, setEditingScheduleItem] = useState<ScheduleItem | null>(null);
   const [dayDetail, setDayDetail] = useState<{ date: string; items: ScheduleItem[] } | null>(null);
   const [openScheduleMenuId, setOpenScheduleMenuId] = useState<number | null>(null);
+  const [showScheduleListDetail, setShowScheduleListDetail] = useState(false);
 
   const loadScheduleItems = () => {
     fetchScheduleItems(month)
@@ -222,6 +224,7 @@ export function SchedulePage() {
   const [showRoutineForm, setShowRoutineForm] = useState(false);
   const [editingRoutineItem, setEditingRoutineItem] = useState<RoutineItem | null>(null);
   const [openRoutineMenuId, setOpenRoutineMenuId] = useState<number | null>(null);
+  const [showRoutineListDetail, setShowRoutineListDetail] = useState(false);
 
   const loadRoutineItems = () => {
     fetchRoutineItems()
@@ -266,10 +269,165 @@ export function SchedulePage() {
     }
   };
 
+  // ---- 마감 알림 테스트 (매일 아침 자동 발송되는 것과 같은 로직을 지금 바로 실행해봄) ----
+  const [digestSending, setDigestSending] = useState(false);
+  const [digestResult, setDigestResult] = useState<string | null>(null);
+
+  const handleSendDigestNow = async () => {
+    setDigestSending(true);
+    setDigestResult(null);
+    try {
+      const { sent } = await sendDigestNow();
+      setDigestResult(sent ? '메일을 보냈어요. 편지함을 확인해보세요.' : '내일 마감/일정이 없어서 보낼 내용이 없었어요.');
+    } catch (err) {
+      setDigestResult(err instanceof Error ? err.message : '알림 발송 중 오류가 발생했습니다.');
+    } finally {
+      setDigestSending(false);
+    }
+  };
+
+  function renderScheduleRow(item: ScheduleItem) {
+    const isPast = item.endDate < todayStr();
+    return (
+      <div className={`schedule-list__row ${isPast ? 'schedule-list__row--past' : ''}`} key={item.id}>
+        <div className="recurring-row__info">
+          <span className="recurring-row__name">
+            <span className={`schedule-color-dot schedule-color-dot--${scheduleColorClass(item.id)}`} />
+            {item.title}
+          </span>
+          <span className="recurring-row__category">
+            {item.startDate === item.endDate
+              ? item.startDate.slice(5).replace('-', '/')
+              : `${item.startDate.slice(5).replace('-', '/')} ~ ${item.endDate.slice(5).replace('-', '/')}`}
+            {item.memo ? ` · ${item.memo}` : ''}
+          </span>
+        </div>
+        <div className="row-menu-wrap">
+          <button
+            className="row-menu-trigger"
+            aria-label="메뉴"
+            onClick={() => setOpenScheduleMenuId((cur) => (cur === item.id ? null : item.id))}
+          >
+            ⋯
+          </button>
+          {openScheduleMenuId === item.id && (
+            <>
+              <div className="menu-backdrop" onClick={() => setOpenScheduleMenuId(null)} />
+              <div className="row-menu-popover">
+                <button
+                  className="row-menu-item"
+                  onClick={() => {
+                    setEditingScheduleItem(item);
+                    setOpenScheduleMenuId(null);
+                  }}
+                >
+                  수정
+                </button>
+                <button
+                  className="row-menu-item row-menu-item--danger"
+                  onClick={() => {
+                    setOpenScheduleMenuId(null);
+                    handleScheduleDelete(item.id);
+                  }}
+                >
+                  삭제
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  function renderRoutineRow(item: RoutineItem) {
+    return (
+      <div className="schedule-list__row" key={item.id}>
+        <div className="recurring-row__info">
+          <span className="recurring-row__name">{item.title}</span>
+          <span className="recurring-row__category">
+            매주 {formatDaysOfWeek(item.daysOfWeek)}
+            {item.memo ? ` · ${item.memo}` : ''}
+          </span>
+        </div>
+        <div className="row-menu-wrap">
+          <button
+            className="row-menu-trigger"
+            aria-label="메뉴"
+            onClick={() => setOpenRoutineMenuId((cur) => (cur === item.id ? null : item.id))}
+          >
+            ⋯
+          </button>
+          {openRoutineMenuId === item.id && (
+            <>
+              <div className="menu-backdrop" onClick={() => setOpenRoutineMenuId(null)} />
+              <div className="row-menu-popover">
+                <button
+                  className="row-menu-item"
+                  onClick={() => {
+                    setEditingRoutineItem(item);
+                    setOpenRoutineMenuId(null);
+                  }}
+                >
+                  수정
+                </button>
+                <button
+                  className="row-menu-item row-menu-item--danger"
+                  onClick={() => {
+                    setOpenRoutineMenuId(null);
+                    handleRoutineDelete(item.id);
+                  }}
+                >
+                  해지
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  const LIST_LIMIT = 6;
+  const visibleScheduleItems = sortedScheduleItems.slice(0, LIST_LIMIT);
+  const visibleRoutineItems = routineItems.slice(0, LIST_LIMIT);
+
   return (
     <div className="app">
       {error && <div className="error-banner">{error}</div>}
 
+      {showScheduleListDetail ? (
+        <div className="card section">
+          <div className="card-header-row">
+            <button className="text-button" onClick={() => setShowScheduleListDetail(false)}>
+              ‹ 뒤로
+            </button>
+            <h2 className="section-title">이번 달 일정</h2>
+          </div>
+          {sortedScheduleItems.length === 0 ? (
+            <div className="empty-state">이 달엔 등록된 일정이 없어요.</div>
+          ) : (
+            <div className="schedule-list">{sortedScheduleItems.map(renderScheduleRow)}</div>
+          )}
+        </div>
+      ) : showRoutineListDetail ? (
+        <div className="card section">
+          <div className="card-header-row">
+            <button className="text-button" onClick={() => setShowRoutineListDetail(false)}>
+              ‹ 뒤로
+            </button>
+            <h2 className="section-title">고정 루틴</h2>
+            <button className="action-button" onClick={() => setShowRoutineForm(true)}>
+              + 루틴 추가
+            </button>
+          </div>
+          {routineItems.length === 0 ? (
+            <div className="empty-state">등록된 고정 루틴이 없어요.</div>
+          ) : (
+            <div className="schedule-list">{routineItems.map(renderRoutineRow)}</div>
+          )}
+        </div>
+      ) : (
       <div className="schedule-layout">
         <div className="card section">
           <div className="gcal-header">
@@ -281,7 +439,7 @@ export function SchedulePage() {
               ›
             </button>
             <button className="gcal-header__today" onClick={() => setMonth(currentMonth())}>
-              오늘
+              오늘로 이동
             </button>
           </div>
 
@@ -311,61 +469,14 @@ export function SchedulePage() {
             {sortedScheduleItems.length === 0 ? (
               <div className="empty-state">이 달엔 등록된 일정이 없어요.</div>
             ) : (
-              <div className="schedule-list">
-                {sortedScheduleItems.map((item) => {
-                  const isPast = item.endDate < todayStr();
-                  return (
-                    <div className={`schedule-list__row ${isPast ? 'schedule-list__row--past' : ''}`} key={item.id}>
-                      <div className="recurring-row__info">
-                        <span className="recurring-row__name">
-                          <span className={`schedule-color-dot schedule-color-dot--${scheduleColorClass(item.id)}`} />
-                          {item.title}
-                        </span>
-                        <span className="recurring-row__category">
-                          {item.startDate === item.endDate
-                            ? item.startDate.slice(5).replace('-', '/')
-                            : `${item.startDate.slice(5).replace('-', '/')} ~ ${item.endDate.slice(5).replace('-', '/')}`}
-                          {item.memo ? ` · ${item.memo}` : ''}
-                        </span>
-                      </div>
-                      <div className="row-menu-wrap">
-                        <button
-                          className="row-menu-trigger"
-                          aria-label="메뉴"
-                          onClick={() => setOpenScheduleMenuId((cur) => (cur === item.id ? null : item.id))}
-                        >
-                          ⋯
-                        </button>
-                        {openScheduleMenuId === item.id && (
-                          <>
-                            <div className="menu-backdrop" onClick={() => setOpenScheduleMenuId(null)} />
-                            <div className="row-menu-popover">
-                              <button
-                                className="row-menu-item"
-                                onClick={() => {
-                                  setEditingScheduleItem(item);
-                                  setOpenScheduleMenuId(null);
-                                }}
-                              >
-                                수정
-                              </button>
-                              <button
-                                className="row-menu-item row-menu-item--danger"
-                                onClick={() => {
-                                  setOpenScheduleMenuId(null);
-                                  handleScheduleDelete(item.id);
-                                }}
-                              >
-                                삭제
-                              </button>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              <>
+                <div className="schedule-list">{visibleScheduleItems.map(renderScheduleRow)}</div>
+                {sortedScheduleItems.length > LIST_LIMIT && (
+                  <button className="expand-toggle-button" onClick={() => setShowScheduleListDetail(true)}>
+                    더보기 ({sortedScheduleItems.length - LIST_LIMIT})
+                  </button>
+                )}
+              </>
             )}
           </div>
 
@@ -380,53 +491,14 @@ export function SchedulePage() {
             {routineItems.length === 0 ? (
               <div className="empty-state">등록된 고정 루틴이 없어요.</div>
             ) : (
-              <div className="schedule-list">
-                {routineItems.map((item) => (
-                  <div className="schedule-list__row" key={item.id}>
-                    <div className="recurring-row__info">
-                      <span className="recurring-row__name">{item.title}</span>
-                      <span className="recurring-row__category">
-                        매주 {formatDaysOfWeek(item.daysOfWeek)}
-                        {item.memo ? ` · ${item.memo}` : ''}
-                      </span>
-                    </div>
-                    <div className="row-menu-wrap">
-                      <button
-                        className="row-menu-trigger"
-                        aria-label="메뉴"
-                        onClick={() => setOpenRoutineMenuId((cur) => (cur === item.id ? null : item.id))}
-                      >
-                        ⋯
-                      </button>
-                      {openRoutineMenuId === item.id && (
-                        <>
-                          <div className="menu-backdrop" onClick={() => setOpenRoutineMenuId(null)} />
-                          <div className="row-menu-popover">
-                            <button
-                              className="row-menu-item"
-                              onClick={() => {
-                                setEditingRoutineItem(item);
-                                setOpenRoutineMenuId(null);
-                              }}
-                            >
-                              수정
-                            </button>
-                            <button
-                              className="row-menu-item row-menu-item--danger"
-                              onClick={() => {
-                                setOpenRoutineMenuId(null);
-                                handleRoutineDelete(item.id);
-                              }}
-                            >
-                              해지
-                            </button>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <>
+                <div className="schedule-list">{visibleRoutineItems.map(renderRoutineRow)}</div>
+                {routineItems.length > LIST_LIMIT && (
+                  <button className="expand-toggle-button" onClick={() => setShowRoutineListDetail(true)}>
+                    더보기 ({routineItems.length - LIST_LIMIT})
+                  </button>
+                )}
+              </>
             )}
           </div>
 
@@ -455,8 +527,24 @@ export function SchedulePage() {
               </div>
             </div>
           </div>
+
+          {import.meta.env.DEV && (
+            <div className="card section">
+              <div className="card-header-row">
+                <h2 className="section-title">마감 알림 (로컬 전용 테스트)</h2>
+              </div>
+              <p className="digest-test__description">
+                매일 아침 8시에 내일 마감인 할 일과 내일 일정을 이메일로 보내드려요. 이 카드는 개발 모드에서만 보여요.
+              </p>
+              <button className="action-button" onClick={handleSendDigestNow} disabled={digestSending}>
+                {digestSending ? '보내는 중...' : '지금 보내보기'}
+              </button>
+              {digestResult && <p className="digest-test__result">{digestResult}</p>}
+            </div>
+          )}
         </div>
       </div>
+      )}
 
       <div className="card section">
         <div className="card-header-row">

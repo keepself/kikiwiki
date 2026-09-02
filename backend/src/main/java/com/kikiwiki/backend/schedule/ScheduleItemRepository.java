@@ -30,4 +30,7 @@ public interface ScheduleItemRepository extends JpaRepository<ScheduleItem, Long
 
     // 루틴 해지 시 그 루틴에서 만들어진 캘린더 일정을 전부 같이 지우기 위함
     List<ScheduleItem> findAllByRoutineIdAndDeletedAtIsNull(Long routineId);
+
+    // 마감 알림 다이제스트용 - 특정 날짜에 시작하는 일정
+    List<ScheduleItem> findAllByStartDateAndDeletedAtIsNull(LocalDate startDate);
 }

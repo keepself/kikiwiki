@@ -3,8 +3,6 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { UNAUTHORIZED_EVENT } from './api/client';
 import { LoginPage } from './components/LoginPage';
 import { Layout } from './components/Layout';
-import { DashboardPage } from './pages/DashboardPage';
-import { SchedulePage } from './pages/SchedulePage';
 import { getToken, clearToken } from './auth';
 import './App.css';
 
@@ -30,9 +28,13 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Layout은 부모 라우트라 한 번만 마운트됨. 실제 화면(가계부/일정관리)은
+            Outlet으로 경로마다 갈아끼우지 않고 Layout이 직접 둘 다 마운트해둔 채
+            보이기/숨기기만 함 - 그래야 탭을 오가도 스크롤 위치/상태가 유지됨.
+            아래 자식 라우트는 URL 매칭 용도일 뿐, element는 Layout이 무시함 */}
         <Route element={<Layout onLogout={handleLogout} />}>
-          <Route path="/" element={<DashboardPage />} />
-          <Route path="/schedule" element={<SchedulePage />} />
+          <Route path="/" element={null} />
+          <Route path="/schedule" element={null} />
         </Route>
       </Routes>
     </BrowserRouter>
