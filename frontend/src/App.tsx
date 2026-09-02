@@ -4,6 +4,7 @@ import { UNAUTHORIZED_EVENT } from './api/client';
 import { LoginPage } from './components/LoginPage';
 import { Layout } from './components/Layout';
 import { getToken, clearToken } from './auth';
+import { getTimeTheme } from './timeTheme';
 import './App.css';
 
 function App() {
@@ -14,6 +15,16 @@ function App() {
     const handleUnauthorized = () => setIsLoggedIn(false);
     window.addEventListener(UNAUTHORIZED_EVENT, handleUnauthorized);
     return () => window.removeEventListener(UNAUTHORIZED_EVENT, handleUnauthorized);
+  }, []);
+
+  // 배경을 현재 시간대(5단계)에 맞게 바꿈 - 탭을 오래 켜두면 시간대가 바뀔 수 있어서 주기적으로 다시 확인
+  useEffect(() => {
+    const applyTimeTheme = () => {
+      document.documentElement.dataset.timeTheme = getTimeTheme();
+    };
+    applyTimeTheme();
+    const interval = setInterval(applyTimeTheme, 5 * 60 * 1000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleLogout = () => {
