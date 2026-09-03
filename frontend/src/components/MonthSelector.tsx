@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { fetchActiveMonths } from '../api/client';
+import { TriangleLeftIcon, TriangleRightIcon } from './TriangleIcons';
 
 interface Props {
   month: string; // "YYYY-MM"
@@ -28,11 +29,11 @@ export function MonthSelector({ month, onChange }: Props) {
     <div className="month-selector">
       <div className="month-selector__year">
         <button className="icon-button" onClick={() => setYear((y) => y - 1)} aria-label="이전 연도">
-          ‹
+          <TriangleLeftIcon />
         </button>
         <span className="month-selector__year-label">{year}년</span>
         <button className="icon-button" onClick={() => setYear((y) => y + 1)} aria-label="다음 연도">
-          ›
+          <TriangleRightIcon />
         </button>
       </div>
 

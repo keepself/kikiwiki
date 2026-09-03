@@ -41,3 +41,5 @@ app:
     model: ${ANTHROPIC_MODEL:claude-haiku-4-5}
   kakao:
     rest-api-key: ${KAKAO_REST_API_KEY:}   # 카카오 로컬 API(장소 검색)용
+  ootd:
+    upload-dir: ${OOTD_UPLOAD_DIR:/app/uploads/ootd}   # docker-compose.prod.yml에서 볼륨 마운트한 경로 - 배포로 컨테이너가 갈아끼워져도 사진이 유지됨

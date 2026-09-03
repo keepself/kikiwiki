@@ -12,6 +12,7 @@ export const PAGE_LABELS: Record<string, string> = {
   '/workout': '운동기록',
   '/storage': '정보 저장소',
   '/place': '플레이스',
+  '/ootd': 'OOTD',
 };
 
 interface Props {
@@ -69,6 +70,15 @@ function PinIcon() {
   );
 }
 
+function CameraIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2.5 6.5a1 1 0 0 1 1-1h2l1-2h7l1 2h2a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-9Z" />
+      <circle cx="10" cy="11" r="3.2" />
+    </svg>
+  );
+}
+
 function LockIcon() {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -84,6 +94,7 @@ const TAB_ICONS: Record<string, () => React.ReactElement> = {
   '/workout': DumbbellIcon,
   '/storage': BookmarkIcon,
   '/place': PinIcon,
+  '/ootd': CameraIcon,
 };
 
 // 열린 탭이 하나도 없으면(전부 닫음) 새 창 자체를 렌더링하지 않음 - 상단바만 남고 나머지는 사라짐.

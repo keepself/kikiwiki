@@ -31,6 +31,7 @@ import { WishlistPurchaseForm } from '../components/WishlistPurchaseForm';
 import { RecurringItemForm } from '../components/RecurringItemForm';
 import { RecurringItemList } from '../components/RecurringItemList';
 import { Modal } from '../components/Modal';
+import { TriangleLeftIcon, TriangleRightIcon } from '../components/TriangleIcons';
 
 const PAGE_SIZE = 6;
 
@@ -373,11 +374,11 @@ export function DashboardPage() {
           <div className="card section">
             <div className="spending-calendar__header">
               <button className="icon-button" onClick={() => setMonth(shiftMonth(month, -1))} aria-label="이전 달">
-                ‹
+                <TriangleLeftIcon />
               </button>
               <h2 className="section-title">{Number(month.slice(5, 7))}月</h2>
               <button className="icon-button" onClick={() => setMonth(shiftMonth(month, 1))} aria-label="다음 달">
-                ›
+                <TriangleRightIcon />
               </button>
             </div>
             <SpendingCalendar month={month} transactions={monthTransactions} />

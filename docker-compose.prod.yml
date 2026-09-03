@@ -39,9 +39,12 @@ services:
       NOTIFICATION_EMAIL: ${NOTIFICATION_EMAIL:-keepselfz@gmail.com}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       KAKAO_REST_API_KEY: ${KAKAO_REST_API_KEY:-}
+    volumes:
+      - kikiwiki-ootd-uploads:/app/uploads
     ports:
       - "8080:8080"
     mem_limit: 450m
 
 volumes:
   kikiwiki-postgres-data:
+  kikiwiki-ootd-uploads:

@@ -28,3 +28,33 @@ export function resizeImageToDataUrl(file: File, maxSize = 320, quality = 0.85):
     reader.readAsDataURL(file);
   });
 }
+
+// OOTD용 - 인스타그램 피드처럼 가운데를 정사각형으로 잘라내고 size x size로 리사이즈함
+export function resizeImageToSquareDataUrl(file: File, size = 1080, quality = 0.85): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('이미지를 읽지 못했어요.'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('이미지를 불러오지 못했어요.'));
+      img.onload = () => {
+        const cropSize = Math.min(img.width, img.height);
+        const sx = (img.width - cropSize) / 2;
+        const sy = (img.height - cropSize) / 2;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('이미지를 처리하지 못했어요.'));
+          return;
+        }
+        ctx.drawImage(img, sx, sy, cropSize, cropSize, 0, 0, size, size);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  });
+}

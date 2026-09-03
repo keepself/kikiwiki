@@ -7,6 +7,7 @@ import { SchedulePage } from '../pages/SchedulePage';
 import { WorkoutPage } from '../pages/WorkoutPage';
 import { StoragePage } from '../pages/StoragePage';
 import { PlacePage } from '../pages/PlacePage';
+import { OotdPage } from '../pages/OotdPage';
 
 interface Props {
   onLogout: () => void;
@@ -58,6 +59,9 @@ export function Layout({ onLogout }: Props) {
           </div>
           <div style={{ display: location.pathname === '/place' ? 'block' : 'none' }}>
             <PlacePage />
+          </div>
+          <div style={{ display: location.pathname === '/ootd' ? 'block' : 'none' }}>
+            <OotdPage />
           </div>
         </WindowFrame>
       </main>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { TriangleLeftIcon, TriangleRightIcon } from './TriangleIcons';
 
 interface Props {
   value: string; // '' = 전체 기간, 아니면 "YYYY-MM"
@@ -26,11 +27,11 @@ export function MonthFilterSelect({ value, onChange }: Props) {
           <div className="row-menu-popover month-filter__popover">
             <div className="month-filter__year-row">
               <button type="button" className="icon-button" onClick={() => setYear((y) => y - 1)} aria-label="이전 연도">
-                ‹
+                <TriangleLeftIcon />
               </button>
               <span className="month-filter__year-label">{year}년</span>
               <button type="button" className="icon-button" onClick={() => setYear((y) => y + 1)} aria-label="다음 연도">
-                ›
+                <TriangleRightIcon />
               </button>
             </div>
 

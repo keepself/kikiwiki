@@ -8,9 +8,9 @@ interface Props {
   onDelete: (id: number) => Promise<void>;
   onRequestCoaching: (record: WorkoutRecord) => void;
   coachingLoadingId: number | null;
-  limit?: number;
-  onViewAll?: () => void;
 }
+
+const PAGE_SIZE = 6;
 
 const WEEKDAY_LABELS = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
 
@@ -47,16 +47,9 @@ function formatSets(exercise: WorkoutExercise): string {
     .join(', ');
 }
 
-export function WorkoutRecordList({
-  records,
-  onEdit,
-  onDelete,
-  onRequestCoaching,
-  coachingLoadingId,
-  limit,
-  onViewAll,
-}: Props) {
+export function WorkoutRecordList({ records, onEdit, onDelete, onRequestCoaching, coachingLoadingId }: Props) {
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
+  const [page, setPage] = useState(1);
 
   const toggleExpanded = (id: number) => {
     setExpandedIds((prev) => {
@@ -77,8 +70,9 @@ export function WorkoutRecordList({
     return <div className="empty-state">등록된 운동 기록이 없어요.</div>;
   }
 
-  const hasMore = limit != null && records.length > limit;
-  const visibleRecords = limit != null ? records.slice(0, limit) : records;
+  const totalPages = Math.max(1, Math.ceil(records.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const visibleRecords = records.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   return (
     <>
@@ -128,10 +122,37 @@ export function WorkoutRecordList({
         })}
       </div>
 
-      {hasMore && (
-        <button className="expand-toggle-button" onClick={onViewAll}>
-          더보기 ({records.length - (limit ?? 0)})
-        </button>
+      {totalPages > 1 && (
+        <div className="pagination">
+          <button
+            type="button"
+            className="pagination__arrow"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            aria-label="이전 페이지"
+          >
+            ‹
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+            <button
+              key={p}
+              type="button"
+              className={`pagination__page ${p === currentPage ? 'pagination__page--active' : ''}`}
+              onClick={() => setPage(p)}
+            >
+              {p}
+            </button>
+          ))}
+          <button
+            type="button"
+            className="pagination__arrow"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            aria-label="다음 페이지"
+          >
+            ›
+          </button>
+        </div>
       )}
     </>
   );

@@ -38,3 +38,6 @@ out/
 
 ### Deployment secrets ###
 .env.prod
+
+### 로컬 개발용 OOTD 업로드 사진 (프로덕션은 볼륨 마운트, 로컬은 그냥 이 폴더에 쌓임) ###
+backend/uploads/

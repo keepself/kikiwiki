@@ -15,9 +15,10 @@ import type {
 import type { Profile, BodyWeightLog, BodyWeightLogInput } from '../types/profile';
 import type { SavedItem, SavedItemInput } from '../types/storage';
 import type { Place, PlaceInput, PlaceSearchResult } from '../types/place';
+import type { OotdEntry, OotdEntryInput } from '../types/ootd';
 import { getToken, clearToken } from '../auth';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // App.tsx가 이 이벤트를 구독해서 isLoggedIn을 false로 바꿈 (페이지 새로고침 없이 로그인 화면으로 전환)
 export const UNAUTHORIZED_EVENT = 'kikiwiki:unauthorized';
@@ -879,5 +880,39 @@ export async function deletePlace(id: number): Promise<void> {
 
   if (!response.ok) {
     throw new Error(`장소 삭제 실패: ${response.status}`);
+  }
+}
+
+export async function fetchOotdEntries(): Promise<OotdEntry[]> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/ootd`);
+
+  if (!response.ok) {
+    throw new Error(`OOTD 조회 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function createOotdEntry(input: OotdEntryInput): Promise<OotdEntry> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/ootd`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error(`OOTD 등록 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function deleteOotdEntry(id: number): Promise<void> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/ootd/${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error(`OOTD 삭제 실패: ${response.status}`);
   }
 }

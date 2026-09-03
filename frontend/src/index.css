@@ -2,7 +2,8 @@
 
 :root {
   --color-bg: #FFFFFF;
-  --color-bg-app: linear-gradient(180deg, #CDEFFB 0%, #FBF3DF 100%);
+  --color-page: #EEF2F1;
+  --color-bg-app: linear-gradient(180deg, #A9E2F5 0%, #F5E8C4 100%);
   --color-text: #2E3B3F;
   --color-text-muted: #8A9A93;
 
@@ -21,17 +22,17 @@
   --radius-md: 16px;
   --radius-lg: 22px;
 
-  --shadow-card: 0 2px 10px rgba(78, 166, 204, 0.14);
+  --shadow-card: none;
 }
 
 /* 5단계 시간대 배경 - 아침(morning)이 기존 기본값과 같음. 카드/글자색은 그대로 두고
    배경 그라디언트만 바뀜 (timeTheme.ts가 :root에 data-time-theme를 붙여줌) */
 :root[data-time-theme="dawn"] {
-  --color-bg-app: linear-gradient(180deg, #E4D6F5 0%, #FCE0D6 100%);
+  --color-bg-app: linear-gradient(180deg, #D4BEF0 0%, #F7C9BA 100%);
 }
 
 :root[data-time-theme="midday"] {
-  --color-bg-app: linear-gradient(180deg, #BEE8FB 0%, #FCF6E3 100%);
+  --color-bg-app: linear-gradient(180deg, #97DBF7 0%, #F5E9C4 100%);
 }
 
 /* 저녁 - 노을이 지면서 하늘색이 짙어지고, 초승달이 떠오르기 시작 (상단바 알약 모양과 안 겹치게

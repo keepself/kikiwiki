@@ -26,6 +26,7 @@ import { ScheduleItemForm } from '../components/ScheduleItemForm';
 import { TodoItemForm } from '../components/TodoItemForm';
 import { RoutineItemForm } from '../components/RoutineItemForm';
 import { Modal } from '../components/Modal';
+import { TriangleLeftIcon, TriangleRightIcon } from '../components/TriangleIcons';
 import { scheduleColorClass } from '../scheduleColor';
 
 const WEEKDAY_SHORT_LABELS = ['', '월', '화', '수', '목', '금', '토', '일']; // 인덱스 1~7이 ISO 요일 값
@@ -432,11 +433,11 @@ export function SchedulePage() {
         <div className="card section">
           <div className="gcal-header">
             <button className="icon-button" onClick={() => setMonth((m) => shiftMonth(m, -1))} aria-label="이전 달">
-              ‹
+              <TriangleLeftIcon />
             </button>
             <span className="gcal-header__title">{year(month)}년 {Number(month.slice(5, 7))}월</span>
             <button className="icon-button" onClick={() => setMonth((m) => shiftMonth(m, 1))} aria-label="다음 달">
-              ›
+              <TriangleRightIcon />
             </button>
             <button className="gcal-header__today" onClick={() => setMonth(currentMonth())}>
               오늘로 이동

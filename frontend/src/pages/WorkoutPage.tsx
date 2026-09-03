@@ -45,7 +45,6 @@ function emptyFormValues(): WorkoutRecordInput {
 }
 
 const MUSCLE_GROUPS: MuscleGroup[] = ['CHEST', 'BACK', 'LOWER_BODY', 'BICEPS', 'TRICEPS', 'SHOULDERS'];
-const RECORDS_LIST_LIMIT = 6;
 
 export function WorkoutPage() {
   const [error, setError] = useState<string | null>(null);
@@ -157,7 +156,6 @@ export function WorkoutPage() {
   };
 
   // 기록이 많아지면 기본 화면엔 최근 것만 보이고, "더보기"로 필터(부위/월)가 달린 전체 상세 화면으로 넘어감
-  const [showRecordsDetail, setShowRecordsDetail] = useState(false);
   const [filterMuscleGroup, setFilterMuscleGroup] = useState<MuscleGroup | ''>('');
   const [filterMonth, setFilterMonth] = useState('');
 
@@ -247,12 +245,9 @@ export function WorkoutPage() {
         onOpenWeightModal={() => setShowWeightModal(true)}
       />
 
-      {showRecordsDetail ? (
+      <div className="schedule-layout">
         <div className="card section">
           <div className="card-header-row">
-            <button className="text-button" onClick={() => setShowRecordsDetail(false)}>
-              ‹ 뒤로
-            </button>
             <h2 className="section-title">운동 기록</h2>
           </div>
 
@@ -282,39 +277,21 @@ export function WorkoutPage() {
             coachingLoadingId={coachingLoadingId}
           />
         </div>
-      ) : (
-        <div className="schedule-layout">
+
+        <div className="schedule-layout__right">
           <div className="card section">
             <div className="card-header-row">
-              <h2 className="section-title">운동 기록</h2>
+              <h2 className="section-title">종목별 기록</h2>
             </div>
 
-            <WorkoutRecordList
-              records={records}
-              onEdit={setEditingRecord}
-              onDelete={handleDelete}
-              onRequestCoaching={handleRequestCoaching}
-              coachingLoadingId={coachingLoadingId}
-              limit={RECORDS_LIST_LIMIT}
-              onViewAll={() => setShowRecordsDetail(true)}
+            <PersonalRecordList
+              records={personalRecords}
+              onSelect={handleViewExerciseHistory}
+              onDelete={handleDeleteExercise}
             />
           </div>
-
-          <div className="schedule-layout__right">
-            <div className="card section">
-              <div className="card-header-row">
-                <h2 className="section-title">종목별 기록</h2>
-              </div>
-
-              <PersonalRecordList
-                records={personalRecords}
-                onSelect={handleViewExerciseHistory}
-                onDelete={handleDeleteExercise}
-              />
-            </div>
-          </div>
         </div>
-      )}
+      </div>
 
       <button className="fab" onClick={() => setFormValues(emptyFormValues())} aria-label="운동 기록 추가">
         +

@@ -42,3 +42,5 @@ app:
     model: ${ANTHROPIC_MODEL:claude-haiku-4-5}
   kakao:
     rest-api-key: ${KAKAO_REST_API_KEY:}   # 카카오 로컬 API(장소 검색)용
+  ootd:
+    upload-dir: ${OOTD_UPLOAD_DIR:./uploads/ootd}
