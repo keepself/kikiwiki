@@ -25,6 +25,17 @@ function CalendarIcon() {
   );
 }
 
+function DumbbellIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 8v4M17 8v4" />
+      <rect x="1" y="7" width="2.5" height="6" rx="0.6" />
+      <rect x="16.5" y="7" width="2.5" height="6" rx="0.6" />
+      <path d="M6 10h8" />
+    </svg>
+  );
+}
+
 function LogoutIcon() {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -57,6 +68,13 @@ export function TopBar({ onLogout, onOpenTab }: Props) {
               <CalendarIcon />
             </span>
             일정관리
+          </button>
+
+          <button type="button" className="topbar__item" onClick={() => onOpenTab('/workout')}>
+            <span className="topbar__icon">
+              <DumbbellIcon />
+            </span>
+            운동기록
           </button>
         </nav>
 

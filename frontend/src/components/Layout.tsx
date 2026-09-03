@@ -4,6 +4,7 @@ import { TopBar } from './TopBar';
 import { WindowFrame, type OpenTab, PAGE_LABELS } from './WindowFrame';
 import { DashboardPage } from '../pages/DashboardPage';
 import { SchedulePage } from '../pages/SchedulePage';
+import { WorkoutPage } from '../pages/WorkoutPage';
 
 interface Props {
   onLogout: () => void;
@@ -46,6 +47,9 @@ export function Layout({ onLogout }: Props) {
           </div>
           <div style={{ display: location.pathname === '/schedule' ? 'block' : 'none' }}>
             <SchedulePage />
+          </div>
+          <div style={{ display: location.pathname === '/workout' ? 'block' : 'none' }}>
+            <WorkoutPage />
           </div>
         </WindowFrame>
       </main>

@@ -34,12 +34,24 @@
   --color-bg-app: linear-gradient(180deg, #BEE8FB 0%, #FCF6E3 100%);
 }
 
+/* 저녁 - 노을이 지면서 하늘색이 짙어지고, 초승달이 떠오르기 시작 (상단바 알약 모양과 안 겹치게
+   우측 상단 구석에 배치 - 카드 길이에 따라 일부만 보일 수 있음, 은은한 장식용).
+   초승달은 보름 원반 위에 하늘색과 같은 "그림자" 원을 살짝 겹쳐서 그믐 조각만 남기는 방식 */
 :root[data-time-theme="evening"] {
-  --color-bg-app: linear-gradient(180deg, #FFD8AE 0%, #FFB3A7 100%);
+  --color-bg-app:
+    radial-gradient(30px 30px at 95% 6%, rgba(255, 251, 235, 0.45), rgba(255, 251, 235, 0.1) 55%, transparent 75%),
+    radial-gradient(circle 13px at calc(95% - 5px) calc(6% - 4px), #FF8A5C 96%, transparent 100%),
+    radial-gradient(circle 12px at 95% 6%, rgba(255, 251, 235, 0.85) 92%, transparent 100%),
+    linear-gradient(180deg, #FF8A5C 0%, #E85D75 32%, #7A5296 72%, #493B78 100%);
 }
 
+/* 밤 - 짙은 남색 하늘 + 초승달 */
 :root[data-time-theme="night"] {
-  --color-bg-app: linear-gradient(180deg, #2E3A66 0%, #1B2340 100%);
+  --color-bg-app:
+    radial-gradient(32px 32px at 95% 6%, rgba(255, 250, 224, 0.4), rgba(255, 250, 224, 0.1) 55%, transparent 75%),
+    radial-gradient(circle 13px at calc(95% - 5px) calc(6% - 4px), #1B1F3D 96%, transparent 100%),
+    radial-gradient(circle 14px at 95% 6%, #FFF7DE 92%, transparent 100%),
+    linear-gradient(180deg, #1B1F3D 0%, #0B0D22 100%);
 }
 
 * {

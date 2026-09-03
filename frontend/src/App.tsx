@@ -46,6 +46,7 @@ function App() {
         <Route element={<Layout onLogout={handleLogout} />}>
           <Route path="/" element={null} />
           <Route path="/schedule" element={null} />
+          <Route path="/workout" element={null} />
         </Route>
       </Routes>
     </BrowserRouter>

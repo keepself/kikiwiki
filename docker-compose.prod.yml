@@ -37,6 +37,7 @@ services:
       MAIL_USERNAME: ${MAIL_USERNAME}
       MAIL_APP_PASSWORD: ${MAIL_APP_PASSWORD}
       NOTIFICATION_EMAIL: ${NOTIFICATION_EMAIL:-keepselfz@gmail.com}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     ports:
       - "8080:8080"
     mem_limit: 450m

@@ -901,6 +901,89 @@
   color: var(--color-text);
 }
 
+.filter-bar__center-select {
+  text-align: center;
+  text-align-last: center;
+}
+
+/* ---- Month Filter (필터용 커스텀 월 선택 - 네이티브 date input 대신 알약 버튼 + 팝오버) ---- */
+
+.month-filter {
+  position: relative;
+}
+
+.month-filter__trigger {
+  border: none;
+  border-radius: 999px;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-accent-strong);
+  background: var(--color-accent-subtle);
+  white-space: nowrap;
+}
+
+.month-filter__popover {
+  min-width: 15rem;
+  padding: 0.75rem;
+}
+
+.month-filter__year-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.625rem;
+}
+
+.month-filter__year-label {
+  font-size: 0.875rem;
+  font-weight: 700;
+  min-width: 3.5rem;
+  text-align: center;
+}
+
+.month-filter__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.375rem;
+  margin-bottom: 0.5rem;
+}
+
+.month-filter__cell {
+  border: none;
+  border-radius: 999px;
+  padding: 0.4rem 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #F7F5FB;
+  color: var(--color-text);
+}
+
+.month-filter__cell:hover {
+  background: var(--color-accent-subtle);
+}
+
+.month-filter__cell--selected {
+  background: var(--color-accent);
+  color: white;
+}
+
+.month-filter__clear {
+  width: 100%;
+  border: none;
+  border-top: 1px solid var(--color-border);
+  background: none;
+  padding: 0.5rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.month-filter__clear:hover {
+  color: var(--color-accent-strong);
+}
+
 /* ---- Card (title-in-box) ---- */
 
 .card {
@@ -1193,6 +1276,34 @@
   transition: opacity 0.15s;
 }
 
+/* ---- Floating Action Button (카드 안이 아니라 화면에 독립적으로 떠 있는 추가 버튼) ---- */
+
+.fab {
+  position: fixed;
+  right: 2rem;
+  bottom: 2rem;
+  width: 3.25rem;
+  height: 3.25rem;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: white;
+  font-size: 1.75rem;
+  font-weight: 400;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 18px rgba(78, 166, 204, 0.4);
+  z-index: 20;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.fab:hover {
+  background: var(--color-accent-strong);
+  transform: translateY(-2px);
+}
+
 .submit-button:disabled {
   opacity: 0.5;
   cursor: default;
@@ -1269,6 +1380,79 @@
   font-weight: 700;
   color: var(--color-text);
   white-space: nowrap;
+}
+
+.category-chart__fill--workout {
+  background: var(--color-accent);
+}
+
+.category-chart__fill--pr {
+  background: var(--color-income);
+}
+
+/* ---- Exercise History (종목별 기록 - 개인 최고기록 + 시간대별 막대) ---- */
+
+.exercise-history__pr {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--color-income-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.exercise-history__pr-clickable {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.exercise-history__pr-delete {
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  line-height: 1;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.exercise-history__pr-delete:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: var(--color-expense);
+}
+
+.exercise-history__pr-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-income);
+}
+
+.exercise-history__pr-value {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.exercise-history__pr-date {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
 }
 
 /* ---- Login Page ---- */
@@ -1514,6 +1698,276 @@
   padding: 0.625rem 1rem;
   border-bottom: 1px solid var(--color-border);
   font-size: 0.8125rem;
+}
+
+/* ---- Personal Record List (종목별 기록 카드 - 종목마다 개인 최고기록을 바로 나열,
+   클릭하면 변화 추이 모달이 열림) ---- */
+
+.personal-record-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.personal-record-list .exercise-history__pr:last-child {
+  margin-bottom: 0;
+}
+
+.exercise-history__pr-clickable:hover .exercise-history__pr-label {
+  text-decoration: underline;
+}
+
+/* ---- Exercise Trend Modal (종목별 기록에서 종목을 클릭하면 열리는 변화 추이 - 라인 그래프 + 목록) ---- */
+
+.exercise-trend__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.exercise-trend__row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 0.25rem;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.8125rem;
+}
+
+.exercise-trend__list .exercise-trend__row:last-child {
+  border-bottom: none;
+}
+
+.exercise-trend__row-date {
+  width: 3.5rem;
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.exercise-trend__row-value {
+  flex: 1;
+  font-weight: 700;
+}
+
+.exercise-trend__row-pr {
+  font-size: 0.6875rem;
+  font-weight: 800;
+  color: var(--color-income);
+  background: var(--color-income-subtle);
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+}
+
+.exercise-trend__row-delete {
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  line-height: 1;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.exercise-trend__row-delete:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: var(--color-expense);
+}
+
+/* ---- Trend Line Chart (종목별 기록 / 몸무게 기록 모달 공용 큰 라인 그래프) ---- */
+
+.trend-line-chart {
+  margin-bottom: 1rem;
+}
+
+.trend-line-chart svg {
+  width: 100%;
+  height: 140px;
+  display: block;
+  overflow: visible;
+}
+
+.trend-line-chart__edges {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.375rem;
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+}
+
+.trend-line-chart__edge-label--end {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* ---- Weight Trend Modal add form ---- */
+
+.weight-trend__add-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.weight-trend__add-form input[type='date'] {
+  flex: 1;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.625rem;
+  font-size: 0.8125rem;
+}
+
+.weight-trend__add-form input[type='number'] {
+  width: 6.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.625rem;
+  font-size: 0.8125rem;
+}
+
+/* ---- Profile Card (운동기록 페이지 상단 - 사진/키/몸무게) ---- */
+
+.profile-card {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.profile-card__photo-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+
+.profile-card__photo-wrap {
+  position: relative;
+}
+
+.profile-card__photo {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-md);
+  border: none;
+  overflow: hidden;
+  background: var(--color-accent-subtle);
+  color: var(--color-accent-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.profile-card__photo img {
+  /* 잘리지 않게 - 원본 비율 그대로 박스 안에 전체가 보이게 함(꽉 채우려고 crop하지 않음) */
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.profile-card__photo-placeholder {
+  font-weight: 300;
+}
+
+.profile-card__photo-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--color-surface);
+  background: var(--color-expense);
+  color: white;
+  font-size: 0.75rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.profile-card__stats {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  flex: 1;
+}
+
+.profile-card__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  border: none;
+  background: none;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+
+.profile-card__stat-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.profile-card__height-field {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+}
+
+.profile-card__height-field input {
+  width: 4rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.profile-card__stat-unit {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.profile-card__stat-value {
+  font-size: 1.0625rem;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.profile-card__stat--clickable {
+  cursor: pointer;
+}
+
+.profile-card__stat-hint {
+  font-size: 0.6875rem;
+  color: var(--color-accent-strong);
+  font-weight: 600;
+}
+
+.profile-card__stat--clickable:hover .profile-card__stat-value {
+  text-decoration: underline;
+}
+
+@media (max-width: 780px) {
+  .profile-card {
+    flex-wrap: wrap;
+  }
+
+  .profile-card__stats {
+    gap: 1.5rem;
+  }
 }
 
 .recurring-row:last-child {
@@ -2255,6 +2709,218 @@
   border-radius: var(--radius-sm);
   padding: 0.4rem 0.75rem;
   white-space: nowrap;
+}
+
+/* ---- Workout Set Rows (운동 기록 폼의 세트별 무게/횟수 입력) ---- */
+
+.workout-set-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.workout-set-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.workout-set-row__label {
+  flex-shrink: 0;
+  width: 2.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.workout-set-row input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.625rem;
+  font-size: 0.875rem;
+}
+
+.workout-set-row__remove {
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: none;
+  background: none;
+  border-radius: 50%;
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.workout-set-row__remove:hover:not(:disabled) {
+  background: var(--color-expense-subtle);
+  color: var(--color-expense);
+}
+
+.workout-set-row__remove:disabled {
+  opacity: 0.3;
+}
+
+/* ---- Workout Exercise Blocks (하루 기록 폼 안에서 종목을 여러 개 반복) ---- */
+
+.workout-exercise-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.workout-exercise-block {
+  padding: 0.625rem 0.75rem;
+}
+
+.workout-exercise-block__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.workout-exercise-block__header input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.625rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.workout-exercise-block__reorder {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.workout-exercise-block__reorder-btn {
+  width: 1.25rem;
+  height: 0.9rem;
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  font-size: 0.5rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.workout-exercise-block__reorder-btn:hover:not(:disabled) {
+  color: var(--color-accent-strong);
+}
+
+.workout-exercise-block__reorder-btn:disabled {
+  opacity: 0.25;
+}
+
+/* ---- Workout Journal List (하루 운동 기록을 일지처럼 - 접었을 땐 날짜+종목명만,
+   눌러야 세트 상세가 펼쳐짐) ---- */
+
+.workout-journal-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.workout-journal-entry {
+  padding: 1.125rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.workout-journal-list > .workout-journal-entry:first-child {
+  padding-top: 0;
+}
+
+.workout-journal-list > .workout-journal-entry:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.workout-journal-entry__head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.625rem;
+  margin-bottom: 0.5rem;
+}
+
+.workout-journal-entry__date {
+  font-size: 1.125rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.workout-journal-entry__weekday {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.workout-journal-entry__names {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.workout-journal-entry__toggle {
+  border: none;
+  background: none;
+  padding: 0;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-accent-strong);
+}
+
+.workout-journal-entry__detail {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.workout-journal-detail__ex-name {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  margin-bottom: 0.125rem;
+}
+
+.workout-journal-detail__sets {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.workout-journal-detail__memo {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.workout-journal-entry__actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.25rem;
+}
+
+.workout-journal-entry__actions button {
+  border: none;
+  background: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  padding: 0;
+}
+
+.workout-journal-entry__actions button:hover {
+  color: var(--color-accent-strong);
 }
 
 .wishlist-form__preview-error {

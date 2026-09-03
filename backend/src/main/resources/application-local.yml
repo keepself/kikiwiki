@@ -37,3 +37,6 @@ app:
     expiration-ms: 1209600000   # 14일 (밀리초)
   notification:
     recipient: ${NOTIFICATION_EMAIL:keepselfz@gmail.com}
+  anthropic:
+    api-key: ${ANTHROPIC_API_KEY:}   # 비어있으면 AI 코칭 기능이 "미설정" 상태로 동작 (에러 대신 안내 메시지)
+    model: ${ANTHROPIC_MODEL:claude-haiku-4-5}

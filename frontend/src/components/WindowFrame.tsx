@@ -9,6 +9,7 @@ export interface OpenTab {
 export const PAGE_LABELS: Record<string, string> = {
   '/': '가계부',
   '/schedule': '일정관리',
+  '/workout': '운동기록',
 };
 
 interface Props {
@@ -38,6 +39,17 @@ function CalendarIcon() {
   );
 }
 
+function DumbbellIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 8v4M17 8v4" />
+      <rect x="1" y="7" width="2.5" height="6" rx="0.6" />
+      <rect x="16.5" y="7" width="2.5" height="6" rx="0.6" />
+      <path d="M6 10h8" />
+    </svg>
+  );
+}
+
 function LockIcon() {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -50,6 +62,7 @@ function LockIcon() {
 const TAB_ICONS: Record<string, () => React.ReactElement> = {
   '/': WalletIcon,
   '/schedule': CalendarIcon,
+  '/workout': DumbbellIcon,
 };
 
 // 열린 탭이 하나도 없으면(전부 닫음) 새 창 자체를 렌더링하지 않음 - 상단바만 남고 나머지는 사라짐.

@@ -5,6 +5,14 @@ import type { ScheduleItem, ScheduleItemInput } from '../types/scheduleItem';
 import type { TodoItem, TodoItemInput, TodoStatus } from '../types/todoItem';
 import type { RoutineItem, RoutineItemInput } from '../types/routineItem';
 import type { AppNotification } from '../types/notification';
+import type {
+  CoachingResult,
+  ExerciseHistoryResult,
+  ExercisePersonalRecordSummary,
+  WorkoutRecord,
+  WorkoutRecordInput,
+} from '../types/workout';
+import type { Profile, BodyWeightLog, BodyWeightLogInput } from '../types/profile';
 import { getToken, clearToken } from '../auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -586,5 +594,182 @@ export async function deleteNotification(id: number): Promise<void> {
 
   if (!response.ok) {
     throw new Error(`알림 삭제 실패: ${response.status}`);
+  }
+}
+
+export async function fetchWorkoutRecords(): Promise<WorkoutRecord[]> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/workout-records`);
+
+  if (!response.ok) {
+    throw new Error(`운동 기록 조회 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function createWorkoutRecord(input: WorkoutRecordInput): Promise<WorkoutRecord> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/workout-records`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error(`운동 기록 등록 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function updateWorkoutRecord(id: number, input: WorkoutRecordInput): Promise<WorkoutRecord> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/workout-records/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error(`운동 기록 수정 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function deleteWorkoutRecord(id: number): Promise<void> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/workout-records/${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error(`운동 기록 삭제 실패: ${response.status}`);
+  }
+}
+
+export async function fetchWorkoutCoaching(recordId: number): Promise<CoachingResult> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/workout-records/${recordId}/coaching`, {
+    method: 'POST',
+  });
+
+  if (!response.ok) {
+    throw new Error(`AI 코칭 요청 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function fetchPersonalRecords(): Promise<ExercisePersonalRecordSummary[]> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/workout-records/personal-records`);
+
+  if (!response.ok) {
+    throw new Error(`개인 기록 조회 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function fetchExerciseHistory(exerciseName: string): Promise<ExerciseHistoryResult> {
+  const response = await authorizedFetch(
+    `${API_BASE_URL}/api/workout-records/exercises/${encodeURIComponent(exerciseName)}/history`
+  );
+
+  if (!response.ok) {
+    throw new Error(`종목 기록 조회 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function deleteExercise(exerciseName: string): Promise<void> {
+  const response = await authorizedFetch(
+    `${API_BASE_URL}/api/workout-records/exercises/${encodeURIComponent(exerciseName)}`,
+    { method: 'DELETE' }
+  );
+
+  if (!response.ok) {
+    throw new Error(`종목 삭제 실패: ${response.status}`);
+  }
+}
+
+export async function fetchProfile(): Promise<Profile> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/profile`);
+
+  if (!response.ok) {
+    throw new Error(`프로필 조회 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function updateProfileHeight(heightCm: number | null): Promise<Profile> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/profile`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ heightCm }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`키 저장 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function updateProfilePhoto(dataUrl: string): Promise<Profile> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/profile/photo`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ dataUrl }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`프로필 사진 저장 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function deleteProfilePhoto(): Promise<Profile> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/profile/photo`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error(`프로필 사진 삭제 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function fetchWeightLogs(): Promise<BodyWeightLog[]> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/profile/weight-logs`);
+
+  if (!response.ok) {
+    throw new Error(`체중 기록 조회 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function createWeightLog(input: BodyWeightLogInput): Promise<BodyWeightLog> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/profile/weight-logs`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error(`체중 기록 등록 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function deleteWeightLog(id: number): Promise<void> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/profile/weight-logs/${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error(`체중 기록 삭제 실패: ${response.status}`);
   }
 }
