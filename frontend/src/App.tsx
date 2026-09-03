@@ -47,6 +47,8 @@ function App() {
           <Route path="/" element={null} />
           <Route path="/schedule" element={null} />
           <Route path="/workout" element={null} />
+          <Route path="/storage" element={null} />
+          <Route path="/place" element={null} />
         </Route>
       </Routes>
     </BrowserRouter>

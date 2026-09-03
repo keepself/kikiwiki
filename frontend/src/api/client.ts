@@ -13,6 +13,8 @@ import type {
   WorkoutRecordInput,
 } from '../types/workout';
 import type { Profile, BodyWeightLog, BodyWeightLogInput } from '../types/profile';
+import type { SavedItem, SavedItemInput } from '../types/storage';
+import type { Place, PlaceInput, PlaceSearchResult } from '../types/place';
 import { getToken, clearToken } from '../auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -771,5 +773,111 @@ export async function deleteWeightLog(id: number): Promise<void> {
 
   if (!response.ok) {
     throw new Error(`체중 기록 삭제 실패: ${response.status}`);
+  }
+}
+
+export async function fetchSavedItems(): Promise<SavedItem[]> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/saved-items`);
+
+  if (!response.ok) {
+    throw new Error(`저장 항목 조회 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function createSavedItem(input: SavedItemInput): Promise<SavedItem> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/saved-items`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error(`저장 항목 등록 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function updateSavedItem(id: number, input: SavedItemInput): Promise<SavedItem> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/saved-items/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error(`저장 항목 수정 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function deleteSavedItem(id: number): Promise<void> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/saved-items/${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error(`저장 항목 삭제 실패: ${response.status}`);
+  }
+}
+
+export async function searchPlaces(query: string): Promise<PlaceSearchResult[]> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/places/search?query=${encodeURIComponent(query)}`);
+
+  if (!response.ok) {
+    throw new Error(`장소 검색 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function fetchPlaces(): Promise<Place[]> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/places`);
+
+  if (!response.ok) {
+    throw new Error(`장소 조회 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function createPlace(input: PlaceInput): Promise<Place> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/places`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error(`장소 등록 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function updatePlace(id: number, input: PlaceInput): Promise<Place> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/places/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error(`장소 수정 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function deletePlace(id: number): Promise<void> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/places/${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error(`장소 삭제 실패: ${response.status}`);
   }
 }

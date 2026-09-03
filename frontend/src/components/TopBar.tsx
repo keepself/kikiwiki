@@ -36,6 +36,23 @@ function DumbbellIcon() {
   );
 }
 
+function BookmarkIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 3h10a1 1 0 0 1 1 1v13l-6-3.5L4 17V4a1 1 0 0 1 1-1Z" />
+    </svg>
+  );
+}
+
+function PinIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10 2.5c-3 0-5.5 2.3-5.5 5.5 0 3.9 5.5 9.5 5.5 9.5s5.5-5.6 5.5-9.5c0-3.2-2.5-5.5-5.5-5.5Z" />
+      <circle cx="10" cy="8" r="2" />
+    </svg>
+  );
+}
+
 function LogoutIcon() {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -75,6 +92,20 @@ export function TopBar({ onLogout, onOpenTab }: Props) {
               <DumbbellIcon />
             </span>
             운동기록
+          </button>
+
+          <button type="button" className="topbar__item" onClick={() => onOpenTab('/storage')}>
+            <span className="topbar__icon">
+              <BookmarkIcon />
+            </span>
+            정보 저장소
+          </button>
+
+          <button type="button" className="topbar__item" onClick={() => onOpenTab('/place')}>
+            <span className="topbar__icon">
+              <PinIcon />
+            </span>
+            플레이스
           </button>
         </nav>
 

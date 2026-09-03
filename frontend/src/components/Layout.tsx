@@ -5,6 +5,8 @@ import { WindowFrame, type OpenTab, PAGE_LABELS } from './WindowFrame';
 import { DashboardPage } from '../pages/DashboardPage';
 import { SchedulePage } from '../pages/SchedulePage';
 import { WorkoutPage } from '../pages/WorkoutPage';
+import { StoragePage } from '../pages/StoragePage';
+import { PlacePage } from '../pages/PlacePage';
 
 interface Props {
   onLogout: () => void;
@@ -50,6 +52,12 @@ export function Layout({ onLogout }: Props) {
           </div>
           <div style={{ display: location.pathname === '/workout' ? 'block' : 'none' }}>
             <WorkoutPage />
+          </div>
+          <div style={{ display: location.pathname === '/storage' ? 'block' : 'none' }}>
+            <StoragePage />
+          </div>
+          <div style={{ display: location.pathname === '/place' ? 'block' : 'none' }}>
+            <PlacePage />
           </div>
         </WindowFrame>
       </main>
