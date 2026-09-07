@@ -340,14 +340,6 @@ export function DashboardPage() {
               + 추가
             </button>
           </div>
-          {recurringItems.length > 0 && (
-            <div className="recurring-summary">
-              이번 달 고정지출 합계
-              <span className="recurring-summary__amount tabular-nums">
-                {recurringItems.reduce((sum, item) => sum + item.amount, 0).toLocaleString()}원
-              </span>
-            </div>
-          )}
           <RecurringItemList
             items={recurringItems}
             onApply={handleRecurringApply}
@@ -365,9 +357,6 @@ export function DashboardPage() {
               transactions={monthTransactions}
               previousMonthTransactions={previousMonthTransactions}
             />
-          </div>
-
-          <div className="section">
             <CategoryBarChart month={month} refreshKey={refreshKey} />
           </div>
 
@@ -387,6 +376,9 @@ export function DashboardPage() {
 
         <div className="top-row__right">
           <div className="card section">
+            <div className="card-header-row">
+              <h2 className="section-title">거래내역</h2>
+            </div>
             <div className="filter-bar-row">
               <TransactionFilter
                 type={filterType}
@@ -422,14 +414,6 @@ export function DashboardPage() {
                 + 추가
               </button>
             </div>
-            {recurringItems.length > 0 && (
-              <div className="recurring-summary">
-                이번 달 고정지출 합계
-                <span className="recurring-summary__amount tabular-nums">
-                  {recurringItems.reduce((sum, item) => sum + item.amount, 0).toLocaleString()}원
-                </span>
-              </div>
-            )}
             <RecurringItemList
               items={recurringItems}
               onApply={handleRecurringApply}

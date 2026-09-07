@@ -1,82 +1,17 @@
 import { useEffect, useLayoutEffect, useRef, type ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
+import { TAB_ICONS, PAGE_LABELS } from './navItems';
 
 export interface OpenTab {
   path: string;
   label: string;
 }
 
-export const PAGE_LABELS: Record<string, string> = {
-  '/': '가계부',
-  '/schedule': '일정관리',
-  '/workout': '운동기록',
-  '/storage': '정보 저장소',
-  '/place': '플레이스',
-  '/ootd': 'OOTD',
-};
-
 interface Props {
   openTabs: OpenTab[];
   onTabClick: (path: string) => void;
   onCloseTab: (path: string) => void;
   children: ReactNode;
-}
-
-function WalletIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2.5" y="5.5" width="15" height="10" rx="2" />
-      <path d="M2.5 8.5h15" />
-      <circle cx="14" cy="12" r="1" />
-    </svg>
-  );
-}
-
-function CalendarIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2.5" y="4" width="15" height="13.5" rx="2.2" />
-      <path d="M2.5 8h15M6.3 2.5v3M13.7 2.5v3" />
-      <circle cx="10" cy="12.5" r="1" />
-    </svg>
-  );
-}
-
-function DumbbellIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 8v4M17 8v4" />
-      <rect x="1" y="7" width="2.5" height="6" rx="0.6" />
-      <rect x="16.5" y="7" width="2.5" height="6" rx="0.6" />
-      <path d="M6 10h8" />
-    </svg>
-  );
-}
-
-function BookmarkIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M5 3h10a1 1 0 0 1 1 1v13l-6-3.5L4 17V4a1 1 0 0 1 1-1Z" />
-    </svg>
-  );
-}
-
-function PinIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M10 2.5c-3 0-5.5 2.3-5.5 5.5 0 3.9 5.5 9.5 5.5 9.5s5.5-5.6 5.5-9.5c0-3.2-2.5-5.5-5.5-5.5Z" />
-      <circle cx="10" cy="8" r="2" />
-    </svg>
-  );
-}
-
-function CameraIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M2.5 6.5a1 1 0 0 1 1-1h2l1-2h7l1 2h2a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-9Z" />
-      <circle cx="10" cy="11" r="3.2" />
-    </svg>
-  );
 }
 
 function LockIcon() {
@@ -87,15 +22,6 @@ function LockIcon() {
     </svg>
   );
 }
-
-const TAB_ICONS: Record<string, () => React.ReactElement> = {
-  '/': WalletIcon,
-  '/schedule': CalendarIcon,
-  '/workout': DumbbellIcon,
-  '/storage': BookmarkIcon,
-  '/place': PinIcon,
-  '/ootd': CameraIcon,
-};
 
 // 열린 탭이 하나도 없으면(전부 닫음) 새 창 자체를 렌더링하지 않음 - 상단바만 남고 나머지는 사라짐.
 // 신호등 점 옆에 탭이 붙어있는, 실제 브라우저 창 구조(창 컨트롤 + 탭 → 주소창 → 본문)를 흉내냄
@@ -146,7 +72,7 @@ export function WindowFrame({ openTabs, onTabClick, onCloseTab, children }: Prop
         </div>
         <div className="window__tabs">
           {openTabs.map((tab) => {
-            const Icon = TAB_ICONS[tab.path] ?? WalletIcon;
+            const Icon = TAB_ICONS[tab.path] ?? TAB_ICONS['/'];
             const isActive = tab.path === location.pathname;
             return (
               <button

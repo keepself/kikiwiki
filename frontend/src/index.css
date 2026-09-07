@@ -39,11 +39,7 @@
    우측 상단 구석에 배치 - 카드 길이에 따라 일부만 보일 수 있음, 은은한 장식용).
    초승달은 보름 원반 위에 하늘색과 같은 "그림자" 원을 살짝 겹쳐서 그믐 조각만 남기는 방식 */
 :root[data-time-theme="evening"] {
-  --color-bg-app:
-    radial-gradient(30px 30px at 95% 6%, rgba(255, 251, 235, 0.45), rgba(255, 251, 235, 0.1) 55%, transparent 75%),
-    radial-gradient(circle 13px at calc(95% - 5px) calc(6% - 4px), #FF8A5C 96%, transparent 100%),
-    radial-gradient(circle 12px at 95% 6%, rgba(255, 251, 235, 0.85) 92%, transparent 100%),
-    linear-gradient(180deg, #FF8A5C 0%, #E85D75 32%, #7A5296 72%, #493B78 100%);
+  --color-bg-app: linear-gradient(180deg, #FF8A5C 0%, #E85D75 32%, #7A5296 72%, #493B78 100%);
 }
 
 /* 밤 - 짙은 남색 하늘 + 초승달 */

@@ -1,4 +1,5 @@
 export interface Profile {
+  username: string;
   heightCm: number | null;
   profileImageDataUrl: string | null;
 }

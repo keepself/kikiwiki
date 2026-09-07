@@ -166,7 +166,7 @@ export function WorkoutPage() {
   });
 
   // 프로필(사진/키) + 체중 기록 - 계정이 하나뿐이라 별도 선택 없이 바로 조회/수정함
-  const [profile, setProfile] = useState<Profile>({ heightCm: null, profileImageDataUrl: null });
+  const [profile, setProfile] = useState<Profile>({ username: '', heightCm: null, profileImageDataUrl: null });
   const [weightLogs, setWeightLogs] = useState<BodyWeightLog[]>([]);
   const [showWeightModal, setShowWeightModal] = useState(false);
 

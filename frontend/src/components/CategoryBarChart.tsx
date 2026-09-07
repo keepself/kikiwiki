@@ -17,7 +17,7 @@ export function CategoryBarChart({ month, refreshKey }: Props) {
 
   if (summary.length === 0) {
     return (
-      <div className="card category-chart">
+      <div className="category-chart">
         <ChartTypeToggle type={type} onChange={setType} />
         <p className="empty-state" style={{ padding: '1.5rem' }}>
           {type === 'EXPENSE' ? '지출' : '수입'} 내역이 없어요.
@@ -55,11 +55,11 @@ export function CategoryBarChart({ month, refreshKey }: Props) {
 function ChartTypeToggle({ type, onChange }: { type: TransactionType; onChange: (t: TransactionType) => void }) {
   return (
     <div className="chart-type-toggle">
-      <button className={type === 'EXPENSE' ? 'active' : ''} onClick={() => onChange('EXPENSE')}>
-        지출
-      </button>
-      <button className={type === 'INCOME' ? 'active' : ''} onClick={() => onChange('INCOME')}>
+      <button className={type === 'INCOME' ? 'active active--income' : ''} onClick={() => onChange('INCOME')}>
         수입
+      </button>
+      <button className={type === 'EXPENSE' ? 'active active--expense' : ''} onClick={() => onChange('EXPENSE')}>
+        지출
       </button>
     </div>
   );

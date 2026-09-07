@@ -17,7 +17,7 @@ const WEEKDAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
 
 function formatDateGroup(dateStr: string): string {
   const date = new Date(dateStr);
-  return `${date.getMonth() + 1}월 ${date.getDate()}일 (${WEEKDAY_LABELS[date.getDay()]})`;
+  return `${date.getMonth() + 1}/${date.getDate()} (${WEEKDAY_LABELS[date.getDay()]})`;
 }
 
 interface DateGroup {

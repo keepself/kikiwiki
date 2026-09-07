@@ -50,6 +50,7 @@ function App() {
           <Route path="/storage" element={null} />
           <Route path="/place" element={null} />
           <Route path="/ootd" element={null} />
+          <Route path="/mypage" element={null} />
         </Route>
       </Routes>
     </BrowserRouter>

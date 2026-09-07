@@ -1,15 +1,11 @@
 import type { SavedItem } from '../types/storage';
+import { LinkTypeIcon, NoteTypeIcon } from './ItemTypeIcons';
 
 interface Props {
   items: SavedItem[];
   onEdit: (item: SavedItem) => void;
   onDelete: (id: number) => Promise<void>;
 }
-
-const TYPE_ICON: Record<SavedItem['type'], string> = {
-  LINK: '🔗',
-  NOTE: '📝',
-};
 
 export function SavedItemList({ items, onEdit, onDelete }: Props) {
   const handleDelete = async (id: number) => {
@@ -26,7 +22,9 @@ export function SavedItemList({ items, onEdit, onDelete }: Props) {
     <div className="saved-item-list">
       {items.map((item) => (
           <div className="item-row" key={item.id}>
-            <div className={`item-icon ${item.type === 'LINK' ? 'link' : 'note'}`}>{TYPE_ICON[item.type]}</div>
+            <div className={`item-icon ${item.type === 'LINK' ? 'link' : 'note'}`}>
+              {item.type === 'LINK' ? <LinkTypeIcon /> : <NoteTypeIcon />}
+            </div>
 
             <div className="item-main">
               <div className="item-title">

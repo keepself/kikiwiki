@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import type { RecurringItem } from '../types/recurringItem';
+import { CheckTypeIcon } from './ItemTypeIcons';
 
 interface Props {
   items: RecurringItem[];
@@ -11,6 +13,8 @@ interface Props {
 }
 
 export function RecurringItemList({ items, onApply, onEdit, onDelete, limit, onViewAll }: Props) {
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+
   const handleDelete = async (id: number) => {
     if (confirm('이 고정지출을 해지할까요?')) {
       await onDelete(id);
@@ -31,27 +35,56 @@ export function RecurringItemList({ items, onApply, onEdit, onDelete, limit, onV
           <div className="recurring-row" key={item.id}>
             <div className="recurring-row__info">
               <span className="recurring-row__name">{item.name}</span>
-              <span className="recurring-row__category">
-                {item.categoryName}
-                {item.dayOfMonth != null ? ` · 매달 ${item.dayOfMonth}일` : ''}
-              </span>
+              {item.dayOfMonth != null && (
+                <span className="recurring-row__category">매달 {item.dayOfMonth}일</span>
+              )}
             </div>
             <span className="recurring-row__amount tabular-nums">{item.amount.toLocaleString()}원</span>
 
             {item.appliedThisMonth ? (
-              <span className="recurring-row__applied">추가됨</span>
+              <span className="recurring-row__applied" aria-label="이번 달 추가됨">
+                <CheckTypeIcon />
+              </span>
             ) : (
               <button className="action-button" onClick={() => onApply(item)}>
                 이번 달 추가
               </button>
             )}
 
-            <button className="recurring-row__edit" onClick={() => onEdit(item)}>
-              수정
-            </button>
-            <button className="recurring-row__delete" onClick={() => handleDelete(item.id)} aria-label="해지">
-              ×
-            </button>
+            <div className="row-menu-wrap">
+              <button
+                className="row-menu-trigger"
+                aria-label="메뉴"
+                onClick={() => setOpenMenuId((cur) => (cur === item.id ? null : item.id))}
+              >
+                ⋯
+              </button>
+              {openMenuId === item.id && (
+                <>
+                  <div className="menu-backdrop" onClick={() => setOpenMenuId(null)} />
+                  <div className="row-menu-popover">
+                    <button
+                      className="row-menu-item"
+                      onClick={() => {
+                        onEdit(item);
+                        setOpenMenuId(null);
+                      }}
+                    >
+                      수정
+                    </button>
+                    <button
+                      className="row-menu-item row-menu-item--danger"
+                      onClick={() => {
+                        setOpenMenuId(null);
+                        handleDelete(item.id);
+                      }}
+                    >
+                      해지
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         ))}
       </div>

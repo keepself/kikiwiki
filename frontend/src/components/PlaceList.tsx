@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Place } from '../types/place';
+import { CheckTypeIcon, PinTypeIcon } from './ItemTypeIcons';
 
 interface Props {
   places: Place[];
@@ -61,7 +62,7 @@ export function PlaceList({ places, onEdit, onDelete, expandedId, onToggleExpand
             >
               <div className="item-row item-row--clickable" onClick={() => onToggleExpand(place.id)}>
                 <div className={`item-icon ${place.status === 'VISITED' ? 'note' : 'link'}`}>
-                  {place.status === 'VISITED' ? '✅' : '📍'}
+                  {place.status === 'VISITED' ? <CheckTypeIcon /> : <PinTypeIcon />}
                 </div>
 
                 <div className="item-main">

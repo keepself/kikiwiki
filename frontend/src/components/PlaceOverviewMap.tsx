@@ -107,14 +107,24 @@ export function PlaceOverviewMap({ places, onSelect, onMapClick, focusPlaceId }:
 
   useEffect(() => {
     if (!containerRef.current) return;
+    // 사이드바 접기/펴기 애니메이션처럼 크기가 짧은 시간 동안 연속으로 바뀔 때
+    // 매 프레임 relayout+render하면 지도가 계속 재중심되며 깜빡이므로, 크기 변화가
+    // 멈춘 뒤 한 번만 반영되도록 디바운스함
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
     const observer = new ResizeObserver(() => {
-      if (mapRef.current) {
-        mapRef.current.relayout();
-        render();
-      }
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        if (mapRef.current) {
+          mapRef.current.relayout();
+          render();
+        }
+      }, 150);
     });
     observer.observe(containerRef.current);
-    return () => observer.disconnect();
+    return () => {
+      clearTimeout(timeoutId);
+      observer.disconnect();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
