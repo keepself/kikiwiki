@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,8 @@ public class Place {
 
     private String review;
 
+    private LocalDate visitedAt;
+
     @JdbcTypeCode(SqlTypes.ARRAY)
     @Column(columnDefinition = "text[]", nullable = false)
     private List<String> tags = new ArrayList<>();
@@ -51,7 +54,7 @@ public class Place {
     }
 
     public Place(String title, String address, Double lat, Double lng, String category, String placeUrl,
-                 PlaceStatus status, Integer rating, String review, List<String> tags) {
+                 PlaceStatus status, Integer rating, String review, List<String> tags, LocalDate visitedAt) {
         this.title = title;
         this.address = address;
         this.lat = lat;
@@ -62,6 +65,7 @@ public class Place {
         this.rating = rating;
         this.review = review;
         this.tags = tags != null ? tags : new ArrayList<>();
+        this.visitedAt = visitedAt;
     }
 
     @PrePersist
@@ -70,7 +74,7 @@ public class Place {
     }
 
     public void update(String title, String address, Double lat, Double lng, String category, String placeUrl,
-                        PlaceStatus status, Integer rating, String review, List<String> tags) {
+                        PlaceStatus status, Integer rating, String review, List<String> tags, LocalDate visitedAt) {
         this.title = title;
         this.address = address;
         this.lat = lat;
@@ -81,6 +85,7 @@ public class Place {
         this.rating = rating;
         this.review = review;
         this.tags = tags != null ? tags : new ArrayList<>();
+        this.visitedAt = visitedAt;
     }
 
     public void softDelete() {
@@ -129,6 +134,10 @@ public class Place {
 
     public List<String> getTags() {
         return tags;
+    }
+
+    public LocalDate getVisitedAt() {
+        return visitedAt;
     }
 
     public LocalDateTime getCreatedAt() {

@@ -3,16 +3,20 @@ import type { MuscleGroup, WorkoutRecordInput, WorkoutStatus } from '../types/wo
 import { MUSCLE_GROUP_EXERCISES, MUSCLE_GROUP_LABELS, WORKOUT_STATUS_LABELS } from '../types/workout';
 
 const MUSCLE_GROUPS: MuscleGroup[] = ['CHEST', 'BACK', 'LOWER_BODY', 'BICEPS', 'TRICEPS', 'SHOULDERS'];
-const WORKOUT_STATUSES: WorkoutStatus[] = ['COMPLETED', 'INCOMPLETE', 'INJURED', 'SKIPPED'];
+// 휴식(SKIPPED)은 더 이상 새로 고를 수 없게 뺌(목표미달로 충분) - 예전에 저장된 기록엔 남아있을 수 있어서
+// 타입/라벨 자체는 유지함
+const WORKOUT_STATUSES: WorkoutStatus[] = ['PLANNED', 'COMPLETED', 'INCOMPLETE', 'INJURED'];
 
-// 완료/목표 미달은 그날 한 종목이 최소 1개 있어야 하지만, 부상/패스는 종목 없이도 기록 가능
+// 계획중/완료/목표 미달은 그날 할(할) 종목이 최소 1개 있어야 하지만, 부상/패스는 종목 없이도 기록 가능
 function requiresExercises(status: WorkoutStatus): boolean {
-  return status === 'COMPLETED' || status === 'INCOMPLETE';
+  return status === 'PLANNED' || status === 'COMPLETED' || status === 'INCOMPLETE';
 }
 
 interface SetRow {
   weightKg: string;
   reps: string;
+  targetWeightKg: number | null;
+  targetReps: number | null;
 }
 
 interface ExerciseRow {
@@ -24,10 +28,21 @@ interface Props {
   initialValues?: WorkoutRecordInput;
   submitLabel?: string;
   onSubmit: (input: WorkoutRecordInput) => Promise<void>;
+  // 새 계획을 만드는 중(등록 폼, AI 코칭 초안)인지 실제 저장된 기록을 고치는 중인지를 명시적으로 받음 -
+  // 둘 다 initialValues가 있을 수 있어서(코칭 초안도 미리 채워진 값이 있음) initialValues 유무로는
+  // 구분이 안 됨. 상태(계획중/완료/...)는 "진짜 수정"할 때만 고를 수 있고, 새로 만들 땐 항상 계획중으로 시작함
+  isEditing?: boolean;
+  // 이미 목표 운동이 있거나 부상 중이라 새로 계획을 못 만드는 부위 - 새로 만들 때(isEditing=false)만
+  // 그 부위 버튼을 비활성화함(수정 중엔 자기 자신의 부위일 수 있으니 적용 안 함)
+  unavailableMuscleGroups?: Set<MuscleGroup>;
+}
+
+function emptySet(): SetRow {
+  return { weightKg: '', reps: '', targetWeightKg: null, targetReps: null };
 }
 
 function emptyExercise(): ExerciseRow {
-  return { exerciseName: '', sets: [{ weightKg: '', reps: '' }] };
+  return { exerciseName: '', sets: [emptySet()] };
 }
 
 function toExerciseRows(input?: WorkoutRecordInput): ExerciseRow[] {
@@ -38,19 +53,26 @@ function toExerciseRows(input?: WorkoutRecordInput): ExerciseRow[] {
     exerciseName: exercise.exerciseName,
     sets:
       exercise.sets.length === 0
-        ? [{ weightKg: '', reps: '' }]
+        ? [emptySet()]
         : exercise.sets.map((set) => ({
             weightKg: set.weightKg != null ? String(set.weightKg) : '',
             reps: String(set.reps),
+            targetWeightKg: set.targetWeightKg ?? null,
+            targetReps: set.targetReps ?? null,
           })),
   }));
 }
 
-export function WorkoutRecordForm({ initialValues, submitLabel, onSubmit }: Props) {
-  const isEditing = !!initialValues;
+export function WorkoutRecordForm({
+  initialValues,
+  submitLabel,
+  onSubmit,
+  isEditing = false,
+  unavailableMuscleGroups,
+}: Props) {
   const [workoutDate, setWorkoutDate] = useState(initialValues?.workoutDate ?? '');
   const [muscleGroup, setMuscleGroup] = useState<MuscleGroup>(initialValues?.muscleGroup ?? 'CHEST');
-  const [status, setStatus] = useState<WorkoutStatus>(initialValues?.status ?? 'COMPLETED');
+  const [status, setStatus] = useState<WorkoutStatus>(initialValues?.status ?? 'PLANNED');
   const [memo, setMemo] = useState(initialValues?.memo ?? '');
   const [exercises, setExercises] = useState<ExerciseRow[]>(toExerciseRows(initialValues));
   const [submitting, setSubmitting] = useState(false);
@@ -78,7 +100,7 @@ export function WorkoutRecordForm({ initialValues, submitLabel, onSubmit }: Prop
     });
   };
 
-  const updateSet = (exerciseIndex: number, setIndex: number, field: keyof SetRow, value: string) => {
+  const updateSet = (exerciseIndex: number, setIndex: number, field: 'weightKg' | 'reps', value: string) => {
     setExercises((prev) =>
       prev.map((ex, i) =>
         i === exerciseIndex
@@ -93,7 +115,7 @@ export function WorkoutRecordForm({ initialValues, submitLabel, onSubmit }: Prop
       prev.map((ex, i) => {
         if (i !== exerciseIndex) return ex;
         const last = ex.sets[ex.sets.length - 1];
-        return { ...ex, sets: [...ex.sets, { weightKg: last?.weightKg ?? '', reps: '' }] };
+        return { ...ex, sets: [...ex.sets, { ...emptySet(), weightKg: last?.weightKg ?? '' }] };
       })
     );
   };
@@ -104,12 +126,11 @@ export function WorkoutRecordForm({ initialValues, submitLabel, onSubmit }: Prop
     );
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  // 제출 직전 검증 + WorkoutRecordInput 조립 - 그냥 저장이든 "저장하고 다음 계획 받기"든 똑같이 씀
+  const buildInput = (): WorkoutRecordInput | null => {
     if (!workoutDate) {
       alert('날짜를 선택해주세요.');
-      return;
+      return null;
     }
 
     const validExercises = exercises
@@ -123,24 +144,40 @@ export function WorkoutRecordForm({ initialValues, submitLabel, onSubmit }: Prop
 
     if (requiresExercises(status) && validExercises.length === 0) {
       alert('운동 종목을 세트와 함께 최소 1개 이상 입력해주세요.');
-      return;
+      return null;
     }
+
+    return {
+      workoutDate,
+      muscleGroup,
+      status,
+      memo: memo || null,
+      exercises: validExercises.map((ex) => ({
+        exerciseName: ex.exerciseName,
+        sets: ex.sets.map((set) => {
+          const weightKg = set.weightKg ? Number(set.weightKg) : null;
+          const reps = Number(set.reps);
+          // 아직 계획중인 카드는 무게/횟수가 곧 목표라서, "수정"으로 여길 고치면 목표도 같이 갱신함.
+          // 이미 완료/목표미달 등으로 넘어간 기록은 그때의 목표가 기록으로 남아야 하니 건드리지 않음
+          return {
+            weightKg,
+            reps,
+            targetWeightKg: status === 'PLANNED' ? weightKg : set.targetWeightKg,
+            targetReps: status === 'PLANNED' ? reps : set.targetReps,
+          };
+        }),
+      })),
+    };
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const input = buildInput();
+    if (!input) return;
 
     setSubmitting(true);
     try {
-      await onSubmit({
-        workoutDate,
-        muscleGroup,
-        status,
-        memo: memo || null,
-        exercises: validExercises.map((ex) => ({
-          exerciseName: ex.exerciseName,
-          sets: ex.sets.map((set) => ({
-            weightKg: set.weightKg ? Number(set.weightKg) : null,
-            reps: Number(set.reps),
-          })),
-        })),
-      });
+      await onSubmit(input);
 
       if (!isEditing) {
         setMemo('');
@@ -161,34 +198,44 @@ export function WorkoutRecordForm({ initialValues, submitLabel, onSubmit }: Prop
       <div className="form-field">
         <label>운동 부위</label>
         <div className="weekday-picker">
-          {MUSCLE_GROUPS.map((group) => (
+          {MUSCLE_GROUPS.map((group) => {
+            const isUnavailable = !isEditing && unavailableMuscleGroups?.has(group);
+            return (
             <button
               type="button"
               key={group}
               className={`weekday-picker__day ${muscleGroup === group ? 'weekday-picker__day--selected' : ''}`}
               onClick={() => setMuscleGroup(group)}
+              disabled={isUnavailable}
+              title={isUnavailable ? '이미 목표 운동이 있거나 부상 중인 부위예요' : undefined}
             >
               {MUSCLE_GROUP_LABELS[group]}
             </button>
-          ))}
+            );
+          })}
         </div>
       </div>
 
-      <div className="form-field">
-        <label>상태</label>
-        <div className="weekday-picker">
-          {WORKOUT_STATUSES.map((s) => (
-            <button
-              type="button"
-              key={s}
-              className={`weekday-picker__day ${status === s ? 'weekday-picker__day--selected' : ''}`}
-              onClick={() => setStatus(s)}
-            >
-              {WORKOUT_STATUS_LABELS[s]}
-            </button>
-          ))}
+      {/* 새로 계획을 만들 때는 상태를 고를 필요가 없음(항상 계획중으로 시작) - 실제로 다녀온 뒤
+          완료/목표미달은 리스트의 체크/실패 버튼으로, 부상/휴식은 그 메뉴에서 정함. 여기 상태 picker는
+          "수정" 화면에서 이미 정해진 상태를 바꾸고 싶을 때만 보여줌 */}
+      {isEditing && (
+        <div className="form-field">
+          <label>상태</label>
+          <div className="weekday-picker">
+            {WORKOUT_STATUSES.map((s) => (
+              <button
+                type="button"
+                key={s}
+                className={`weekday-picker__day ${status === s ? 'weekday-picker__day--selected' : ''}`}
+                onClick={() => setStatus(s)}
+              >
+                {WORKOUT_STATUS_LABELS[s]}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="form-field">
         <label>종목 {!requiresExercises(status) && '(선택)'}</label>

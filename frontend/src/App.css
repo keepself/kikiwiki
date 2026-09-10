@@ -218,9 +218,10 @@
   position: absolute;
   top: calc(100% + 0.25rem);
   left: 0;
-  z-index: 11;
-  width: 300px;
-  max-width: 85vw;
+  z-index: 30;
+  /* 사이드바보다 넓으면 옆 카드(지도 검색창 등) 위로 튀어나가 겹쳐 보이므로,
+     사이드바 안쪽 너비를 절대 넘지 않게 100%로 맞춤 */
+  width: 100%;
   background: linear-gradient(180deg, #23262b, #1a1d21);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: var(--radius-sm);
@@ -666,6 +667,14 @@
 .window__tab-close:hover {
   background: rgba(46, 59, 63, 0.14);
   color: var(--color-text);
+}
+
+.window__tab--dragging {
+  opacity: 0.4;
+}
+
+.window__tab--drag-over {
+  box-shadow: inset 2px 0 0 var(--color-accent);
 }
 
 .window__tab--active {
@@ -1245,11 +1254,6 @@
   color: var(--color-text);
 }
 
-.filter-bar__center-select {
-  text-align: center;
-  text-align-last: center;
-}
-
 /* ---- Month Filter (필터용 커스텀 월 선택 - 네이티브 date input 대신 알약 버튼 + 팝오버) ---- */
 
 .month-filter {
@@ -1328,6 +1332,43 @@
   color: var(--color-accent-strong);
 }
 
+/* ---- Muscle Group Filter (월 필터와 같은 알약+팝오버 뼈대를 재사용, 목록은 체크형 드롭다운 + 복수선택) ---- */
+
+.muscle-filter__dropdown {
+  min-width: 9rem;
+}
+
+.muscle-filter__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  border: none;
+  background: none;
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.6rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text);
+  text-align: left;
+}
+
+.muscle-filter__row:hover {
+  background: var(--color-page);
+}
+
+.muscle-filter__row--selected {
+  color: var(--color-accent-strong);
+}
+
+.muscle-filter__row svg {
+  width: 15px;
+  height: 15px;
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
 /* ---- Card (title-in-box) ---- */
 
 .card {
@@ -1388,7 +1429,8 @@
 
 .transaction-row__description {
   font-size: 0.875rem;
-  color: var(--color-text-muted);
+  color: #111111;
+  font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1551,6 +1593,12 @@
   cursor: pointer;
 }
 
+.weekday-picker__day:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
 .weekday-picker__day--selected {
   background: #111111;
   border-color: #111111;
@@ -1652,6 +1700,7 @@
   opacity: 0.5;
   cursor: default;
 }
+
 
 /* ---- Category Bar Chart ---- */
 
@@ -2172,6 +2221,27 @@
   margin-bottom: 1.5rem;
 }
 
+.profile-card--mini {
+  gap: 0.9rem;
+  padding: 0.9rem 1.1rem;
+}
+
+.profile-card__name {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.profile-card__records-btn {
+  flex-shrink: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.42rem 0.85rem;
+}
+
 .profile-card__photo-col {
   display: flex;
   flex-direction: column;
@@ -2182,6 +2252,13 @@
 
 .profile-card__photo-wrap {
   position: relative;
+}
+
+.profile-card--mini .profile-card__photo {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 1.1rem;
 }
 
 .profile-card__photo {
@@ -2232,78 +2309,50 @@
   padding: 0;
 }
 
-.profile-card__stats {
-  display: flex;
-  align-items: center;
-  gap: 2.5rem;
-  flex: 1;
-}
-
-.profile-card__stat {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  border: none;
-  background: none;
-  text-align: left;
-  font: inherit;
-  color: inherit;
-}
-
-.profile-card__stat-label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--color-text-muted);
-}
-
-.profile-card__height-field {
-  display: flex;
-  align-items: baseline;
-  gap: 0.3rem;
-}
-
-.profile-card__height-field input {
-  width: 4rem;
+/* "내 기록" 모달 안 - PR 목록 아래에 키/몸무게를 작게 둠 */
+.my-records-search {
+  width: 100%;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  padding: 0.35rem 0.5rem;
-  font-size: 0.9375rem;
-  font-weight: 700;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.8125rem;
+  background: var(--color-bg);
+  margin-bottom: 0.75rem;
 }
 
-.profile-card__stat-unit {
+.my-records-vitals {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--color-border);
+}
+
+.my-records-vitals__height {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
   font-size: 0.8125rem;
   color: var(--color-text-muted);
 }
 
-.profile-card__stat-value {
-  font-size: 1.0625rem;
-  font-weight: 800;
-  color: var(--color-text);
+.my-records-vitals__height input {
+  width: 3.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.3rem 0.45rem;
+  font-size: 0.875rem;
+  font-weight: 700;
 }
 
-.profile-card__stat--clickable {
-  cursor: pointer;
-}
-
-.profile-card__stat-hint {
-  font-size: 0.6875rem;
+.my-records-vitals__weight {
+  border: none;
+  background: none;
+  font: inherit;
   color: var(--color-accent-strong);
+  font-size: 0.8125rem;
   font-weight: 600;
-}
-
-.profile-card__stat--clickable:hover .profile-card__stat-value {
-  text-decoration: underline;
-}
-
-@media (max-width: 780px) {
-  .profile-card {
-    flex-wrap: wrap;
-  }
-
-  .profile-card__stats {
-    gap: 1.5rem;
-  }
 }
 
 .recurring-row:last-child {
@@ -2823,6 +2872,13 @@
   align-items: start;
 }
 
+.schedule-layout__stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
 .schedule-layout__right {
   display: flex;
   flex-direction: column;
@@ -2834,6 +2890,68 @@
   .schedule-layout {
     grid-template-columns: 1fr;
   }
+}
+
+/* ---- 운동기록 - 목표운동/운동기록/꿀팁저장소 탭 전환 ---- */
+
+.workout-tabs-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.1rem;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 1.1rem;
+  flex-wrap: wrap;
+}
+
+.workout-tabs {
+  display: flex;
+  gap: 1.75rem;
+}
+
+.workout-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: none;
+  background: none;
+  padding: 0.75rem 0;
+  margin-bottom: -1px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  border-bottom: 2px solid transparent;
+}
+
+.workout-tab--active {
+  color: var(--color-text);
+  border-bottom-color: #111111;
+}
+
+.workout-tab__count {
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: var(--color-page);
+  color: var(--color-text-muted);
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+}
+
+.workout-tab--active .workout-tab__count {
+  background: var(--color-accent-subtle);
+  color: var(--color-accent-strong);
+}
+
+.workout-tab-add {
+  border: none;
+  border-radius: 999px;
+  background: var(--color-accent-subtle);
+  color: var(--color-accent-strong);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.42rem 0.8rem;
+  white-space: nowrap;
+  margin-bottom: 0.5rem;
 }
 
 .gcal-header {
@@ -3011,6 +3129,8 @@
 }
 
 .wishlist-form__link-row {
+  position: relative;
+  z-index: 11;
   display: flex;
   gap: 0.5rem;
 }
@@ -3183,6 +3303,276 @@
   line-height: 1.6;
 }
 
+.injury-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  background: var(--color-expense-subtle);
+  border-radius: var(--radius-lg);
+  padding: 0.9rem 1.1rem;
+  box-shadow: var(--shadow-card);
+}
+
+.injury-banner__icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.injury-banner__text {
+  flex: 1;
+  font-size: 0.82rem;
+  color: #A8543F;
+}
+
+.injury-banner__text b {
+  font-weight: 700;
+}
+
+.injury-banner__date {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  margin-top: 0.1rem;
+}
+
+.injury-banner__recover {
+  flex-shrink: 0;
+  border: none;
+  border-radius: 999px;
+  background: var(--color-bg);
+  color: #A8543F;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.4rem 0.75rem;
+}
+
+.workout-status-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+.workout-status-badge--planned {
+  background: var(--color-page);
+  color: var(--color-text-muted);
+}
+
+.workout-status-badge--completed {
+  background: var(--color-income-subtle);
+  color: var(--color-income);
+}
+
+.workout-status-badge--incomplete {
+  background: var(--color-expense-subtle);
+  color: var(--color-expense);
+}
+
+.workout-status-badge--injured {
+  background: var(--color-expense-subtle);
+  color: #A8543F;
+}
+
+.workout-status-badge--skipped {
+  background: var(--color-page);
+  color: var(--color-text-muted);
+}
+
+.workout-nextdate-confirm {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.7rem;
+  background: var(--color-income-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.75rem;
+  flex-wrap: wrap;
+}
+
+.workout-nextdate-confirm__icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-income);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.workout-nextdate-confirm__icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+.workout-nextdate-confirm__icon--fail {
+  background: var(--color-expense);
+}
+
+.workout-coaching-retry {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+  background: var(--color-expense-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.7rem;
+  font-size: 0.78rem;
+  color: var(--color-expense);
+}
+
+.workout-coaching-retry .text-button {
+  margin-left: auto;
+}
+
+.injury-add-row {
+  display: flex;
+}
+
+.injury-add-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  background: var(--color-bg);
+  border-radius: var(--radius-lg);
+  padding: 0.7rem 0.9rem;
+  width: 100%;
+}
+
+.injury-add-picker__label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.injury-add-picker .weekday-picker {
+  flex: 1;
+  min-width: 0;
+}
+
+.workout-nextdate-confirm__text {
+  flex: 1;
+  min-width: 10rem;
+  font-size: 0.78rem;
+  color: var(--color-text);
+}
+
+.workout-nextdate-confirm input {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.55rem;
+  font-size: 0.78rem;
+  background: var(--color-bg);
+}
+
+.workout-nextdate-confirm--edit {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.workout-nextdate-confirm__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.workout-nextdate-confirm__footer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.3rem;
+}
+
+.workout-actual-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0.15rem 0 0 1.75rem;
+}
+
+.workout-actual-edit__row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.workout-actual-edit__name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-text);
+  min-width: 6rem;
+}
+
+.workout-actual-edit__sets {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.workout-actual-edit__set {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.76rem;
+  color: var(--color-text-muted);
+}
+
+.workout-actual-edit__input {
+  width: 3.6rem;
+  -moz-appearance: textfield;
+}
+
+.workout-actual-edit__input::-webkit-inner-spin-button,
+.workout-actual-edit__input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.workout-actual-edit__input--reps {
+  width: 2.75rem;
+}
+
+.workout-checkfail-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.7rem;
+}
+
+.workout-checkfail-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border: none;
+  border-radius: 999px;
+  padding: 0.55rem 0;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.workout-checkfail-btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+.workout-checkfail-btn--complete {
+  background: var(--color-income-subtle);
+  color: var(--color-income);
+}
+
+.workout-checkfail-btn--fail {
+  background: var(--color-expense-subtle);
+  color: var(--color-expense);
+}
+
 .workout-journal-entry__toggle {
   border: none;
   background: none;
@@ -3239,6 +3629,8 @@
 }
 
 .wishlist-form__preview-error {
+  position: relative;
+  z-index: 11;
   font-size: 0.75rem;
   color: var(--color-expense);
   margin-top: 0.375rem;
@@ -3375,24 +3767,87 @@
   font-size: 0.7rem;
   color: var(--color-text-muted);
   flex-shrink: 0;
+  text-align: right;
 }
 
-.item-row__delete {
-  border: none;
-  background: transparent;
+.item-date__label {
+  display: block;
+  font-size: 0.62rem;
   color: var(--color-text-muted);
-  font-size: 1rem;
-  line-height: 1;
-  cursor: pointer;
-  padding: 0.2rem;
-  flex-shrink: 0;
+  opacity: 0.75;
 }
 
-.item-row__delete:hover {
-  color: var(--color-expense);
+.tag-pill--matched {
+  border-color: var(--color-accent);
+  color: var(--color-accent-strong);
+  background: var(--color-accent-subtle);
+  font-weight: 600;
+}
+
+.tag-filter-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  margin: 0 0 0.4rem;
+}
+
+.tag-filter-row {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.tag-chip {
+  font-size: 0.72rem;
+  padding: 0.28rem 0.65rem;
+  border-radius: 999px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.tag-chip--selected {
+  background: var(--color-accent-subtle);
+  border-color: var(--color-accent);
+  color: var(--color-accent-strong);
+  font-weight: 700;
+}
+
+.tag-chip__count {
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+.tag-chip--selected .tag-chip__count {
+  color: var(--color-accent-strong);
+}
+
+.visitdate-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.visitdate-row input {
+  flex: 1;
+}
+
+.visitdate-today {
+  flex-shrink: 0;
+  background: var(--color-accent-subtle);
+  color: var(--color-accent-strong);
+  font-weight: 600;
 }
 
 /* ---- 플레이스 ---- */
+
+.place-overview-map-wrap {
+  position: relative;
+}
 
 .place-overview-map {
   width: 100%;
@@ -3401,7 +3856,195 @@
   overflow: hidden;
 }
 
+.place-map-search {
+  margin-bottom: 0.6rem;
+}
+
+.place-map-search__box {
+  position: relative;
+  z-index: 11;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 0.5rem 0.75rem;
+}
+
+.place-map-search__box svg {
+  width: 15px;
+  height: 15px;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.place-map-search__box input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.8125rem;
+  color: var(--color-text);
+}
+
+.place-map-search__nearby-toggle {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-accent-strong);
+  background: var(--color-accent-subtle);
+  border: none;
+  border-radius: 999px;
+  padding: 0.4rem 0.65rem;
+  white-space: nowrap;
+}
+
+.place-map-search__nearby-toggle svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.place-map-search__nearby-toggle--active {
+  background: var(--color-accent-strong);
+  color: white;
+}
+
+.place-map-search__chip-row {
+  position: relative;
+  z-index: 11;
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  margin-top: 0.5rem;
+}
+
+.place-map-search__chip-row .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.place-map-search__chip-row .chip svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.place-map-search__error {
+  position: relative;
+  z-index: 11;
+  margin-top: 0.4rem;
+  background: var(--color-bg);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  color: var(--color-expense);
+  box-shadow: 0 4px 14px rgba(20, 40, 40, 0.18);
+}
+
+.place-map-search__results {
+  margin-top: 0.4rem;
+  max-height: 260px;
+  box-shadow: 0 4px 14px rgba(20, 40, 40, 0.18);
+}
+
+.place-map-info-card {
+  position: absolute;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  z-index: 5;
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.85rem;
+  box-shadow: 0 4px 14px rgba(20, 40, 40, 0.2);
+}
+
+.place-map-info-card__close {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  border-radius: 50%;
+}
+
+.place-map-info-card__close:hover {
+  background: var(--color-page);
+}
+
+.place-map-info-card__title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-text);
+  padding-right: 1.5rem;
+}
+
+.place-map-info-card__category {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: 0.1rem;
+}
+
+.place-map-info-card__address {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  padding-right: 1.5rem;
+  margin-top: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.place-map-info-card__phone,
+.place-map-info-card__link {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-accent-strong);
+  margin-right: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.place-map-info-card__title-input {
+  width: calc(100% - 1.75rem);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.7rem;
+  font-size: 0.875rem;
+  color: var(--color-text);
+  margin-bottom: 0.4rem;
+}
+
+.place-map-info-card__error,
+.place-map-info-card__warning {
+  font-size: 0.75rem;
+  color: var(--color-expense);
+  margin-bottom: 0.4rem;
+}
+
+.place-map-info-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.place-map-info-card__more {
+  margin-left: auto;
+}
+
 .place-search-results {
+  position: relative;
+  z-index: 11;
   margin-top: 0.5rem;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
@@ -3451,6 +4094,16 @@
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--color-text);
+}
+
+.place-search-results__saved-badge {
+  margin-left: 0.4rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--color-income);
+  background: var(--color-income-subtle);
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem;
 }
 
 .place-search-results__address {

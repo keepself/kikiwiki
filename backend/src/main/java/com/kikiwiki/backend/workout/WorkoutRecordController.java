@@ -21,16 +21,26 @@ public class WorkoutRecordController {
 
     private final WorkoutRecordRepository workoutRecordRepository;
     private final CoachingService coachingService;
+    private final MuscleInjuryService muscleInjuryService;
 
-    public WorkoutRecordController(WorkoutRecordRepository workoutRecordRepository, CoachingService coachingService) {
+    public WorkoutRecordController(
+            WorkoutRecordRepository workoutRecordRepository,
+            CoachingService coachingService,
+            MuscleInjuryService muscleInjuryService
+    ) {
         this.workoutRecordRepository = workoutRecordRepository;
         this.coachingService = coachingService;
+        this.muscleInjuryService = muscleInjuryService;
     }
 
-    // 특정 하루 기록 하나를 골라 "이 기록으로 코칭받기"를 누른 그 순간에만 호출되는 온디맨드 AI 코칭 - 자동 스케줄 없음
+    // 특정 하루 기록 하나를 골라 "이 기록으로 코칭받기"를 누른 그 순간에만 호출되는 온디맨드 AI 코칭 - 자동 스케줄 없음.
+    // nextDate를 안 주면(리스트의 "AI 코칭 받기" 버튼처럼) 서비스에서 기본값(오늘+7일)을 씀
     @PostMapping("/{id}/coaching")
-    public CoachingResponse getCoaching(@PathVariable("id") Long id) {
-        return coachingService.generateProgressiveOverloadCoaching(id);
+    public CoachingResponse getCoaching(
+            @PathVariable("id") Long id,
+            @RequestParam(value = "nextDate", required = false) java.time.LocalDate nextDate
+    ) {
+        return coachingService.generateProgressiveOverloadCoaching(id, nextDate);
     }
 
     // 지금까지 기록한 모든 종목의 개인 최고기록을 한 번에 나열 - "종목별 기록" 카드의 기본 화면(클릭 없이 바로 보임)
@@ -125,11 +135,33 @@ public class WorkoutRecordController {
 
     @PostMapping
     public ResponseEntity<WorkoutRecordResponse> create(@Valid @RequestBody WorkoutRecordRequest request) {
+        if (request.getStatus() == WorkoutStatus.PLANNED) {
+            assertMuscleGroupAvailableForPlanning(request.getMuscleGroup(), null);
+        }
+
         WorkoutRecord record = new WorkoutRecord(request.getWorkoutDate(), request.getMuscleGroup(), request.getStatus(), request.getMemo());
         record.replaceExercises(toExercises(request));
         WorkoutRecord saved = workoutRecordRepository.save(record);
 
+        if (saved.getStatus() == WorkoutStatus.INJURED) {
+            muscleInjuryService.ensureActiveInjury(saved.getMuscleGroup(), saved.getId());
+        }
+
         return ResponseEntity.status(HttpStatus.CREATED).body(new WorkoutRecordResponse(saved));
+    }
+
+    // 나(단일 사용자)만 쓰는 화면이라, 한 부위당 "목표 운동"(계획중)은 최대 1개만 있을 수 있게 함.
+    // 부상 중인 부위도 이미 그 부위 자리를 차지하고 있는 걸로 쳐서 똑같이 막음
+    private void assertMuscleGroupAvailableForPlanning(MuscleGroup muscleGroup, Long excludeRecordId) {
+        if (muscleInjuryService.isActive(muscleGroup)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "이 부위는 부상 중이라 새 계획을 만들 수 없어요.");
+        }
+        boolean duplicate = excludeRecordId == null
+                ? workoutRecordRepository.existsByMuscleGroupAndStatusAndDeletedAtIsNull(muscleGroup, WorkoutStatus.PLANNED)
+                : workoutRecordRepository.existsByMuscleGroupAndStatusAndDeletedAtIsNullAndIdNot(muscleGroup, WorkoutStatus.PLANNED, excludeRecordId);
+        if (duplicate) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "이 부위는 이미 목표 운동이 있어요.");
+        }
     }
 
     @GetMapping
@@ -145,9 +177,17 @@ public class WorkoutRecordController {
         WorkoutRecord record = workoutRecordRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "운동 기록을 찾을 수 없습니다: " + id));
 
+        if (request.getStatus() == WorkoutStatus.PLANNED) {
+            assertMuscleGroupAvailableForPlanning(request.getMuscleGroup(), id);
+        }
+
         record.update(request.getWorkoutDate(), request.getMuscleGroup(), request.getStatus(), request.getMemo());
         record.replaceExercises(toExercises(request));
         WorkoutRecord updated = workoutRecordRepository.save(record);
+
+        if (updated.getStatus() == WorkoutStatus.INJURED) {
+            muscleInjuryService.ensureActiveInjury(updated.getMuscleGroup(), updated.getId());
+        }
 
         return new WorkoutRecordResponse(updated);
     }
@@ -156,6 +196,12 @@ public class WorkoutRecordController {
     public ResponseEntity<Void> delete(@PathVariable("id") Long id) {
         WorkoutRecord record = workoutRecordRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "운동 기록을 찾을 수 없습니다: " + id));
+
+        // 아직 회복 안 된 부상이 이 기록을 원본(sourceRecordId)으로 기억하고 있으면 삭제를 막음 -
+        // 지우면 "회복 완료" 때 이 기록을 기준으로 다음 계획을 못 만들게 됨
+        if (muscleInjuryService.isActiveInjurySource(id)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "이 기록은 현재 부상의 기준 기록이라 삭제할 수 없어요. 먼저 회복 완료 처리해주세요.");
+        }
 
         record.softDelete();
         workoutRecordRepository.save(record);
@@ -178,7 +224,10 @@ public class WorkoutRecordController {
     private List<WorkoutSet> toSets(List<WorkoutSetRequest> setRequests) {
         List<WorkoutSetRequest> requests = setRequests != null ? setRequests : List.of();
         return IntStream.range(0, requests.size())
-                .mapToObj(i -> new WorkoutSet(i + 1, requests.get(i).getWeightKg(), requests.get(i).getReps()))
+                .mapToObj(i -> {
+                    WorkoutSetRequest r = requests.get(i);
+                    return new WorkoutSet(i + 1, r.getWeightKg(), r.getReps(), r.getTargetWeightKg(), r.getTargetReps());
+                })
                 .toList();
     }
 }

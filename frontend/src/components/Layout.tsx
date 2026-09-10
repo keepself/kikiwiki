@@ -52,12 +52,25 @@ export function Layout({ onLogout }: Props) {
     }
   };
 
+  // 탭을 드래그해서 다른 탭 위에 놓으면, 그 탭이 있던 자리로 순서를 옮김 (예: 맨 앞으로 끌어오기)
+  const reorderTab = (draggedPath: string, targetPath: string) => {
+    setOpenTabs((prev) => {
+      const draggedIndex = prev.findIndex((tab) => tab.path === draggedPath);
+      const targetIndex = prev.findIndex((tab) => tab.path === targetPath);
+      if (draggedIndex === -1 || targetIndex === -1 || draggedIndex === targetIndex) return prev;
+      const next = [...prev];
+      const [draggedTab] = next.splice(draggedIndex, 1);
+      next.splice(targetIndex, 0, draggedTab);
+      return next;
+    });
+  };
+
   return (
     <div className="layout">
       <div className="app-shell">
         <Sidebar profile={profile} onOpenTab={openTab} onLogout={onLogout} />
         <main className="main-pane">
-          <WindowFrame openTabs={openTabs} onTabClick={navigate} onCloseTab={closeTab}>
+          <WindowFrame openTabs={openTabs} onTabClick={navigate} onCloseTab={closeTab} onReorderTab={reorderTab}>
             {/* 둘 다 항상 마운트해두고 안 보이는 쪽만 숨김 - 탭을 오가도 스크롤 위치/입력 상태가
                 그대로 유지됨 (Outlet으로 매번 갈아끼우면 탭 전환마다 리마운트되어 상태가 날아감) */}
             <div style={{ display: location.pathname === '/' ? 'block' : 'none' }}>

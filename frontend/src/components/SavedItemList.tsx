@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { SavedItem } from '../types/storage';
 import { LinkTypeIcon, NoteTypeIcon } from './ItemTypeIcons';
 
@@ -8,6 +9,9 @@ interface Props {
 }
 
 export function SavedItemList({ items, onEdit, onDelete }: Props) {
+  // 수정/삭제를 각각 따로 보여주던 버튼을 다른 목록(플레이스 등)이랑 똑같이 "..." 메뉴 하나로 통일함
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+
   const handleDelete = async (id: number) => {
     if (confirm('이 항목을 삭제할까요?')) {
       await onDelete(id);
@@ -48,12 +52,41 @@ export function SavedItemList({ items, onEdit, onDelete }: Props) {
             </div>
 
             <span className="item-date">{item.createdAt.slice(5, 10).replace('-', '/')}</span>
-            <button type="button" className="text-button" onClick={() => onEdit(item)}>
-              수정
-            </button>
-            <button type="button" className="item-row__delete" onClick={() => handleDelete(item.id)} aria-label="삭제">
-              ×
-            </button>
+
+            <div className="row-menu-wrap" onClick={(e) => e.stopPropagation()}>
+              <button
+                className="row-menu-trigger"
+                aria-label="메뉴"
+                onClick={() => setOpenMenuId((cur) => (cur === item.id ? null : item.id))}
+              >
+                ⋯
+              </button>
+              {openMenuId === item.id && (
+                <>
+                  <div className="menu-backdrop" onClick={() => setOpenMenuId(null)} />
+                  <div className="row-menu-popover">
+                    <button
+                      className="row-menu-item"
+                      onClick={() => {
+                        onEdit(item);
+                        setOpenMenuId(null);
+                      }}
+                    >
+                      수정
+                    </button>
+                    <button
+                      className="row-menu-item row-menu-item--danger"
+                      onClick={() => {
+                        setOpenMenuId(null);
+                        handleDelete(item.id);
+                      }}
+                    >
+                      삭제
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
       ))}
     </div>

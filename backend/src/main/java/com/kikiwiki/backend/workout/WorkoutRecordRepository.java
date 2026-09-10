@@ -10,4 +10,8 @@ public interface WorkoutRecordRepository extends JpaRepository<WorkoutRecord, Lo
     List<WorkoutRecord> findAllByDeletedAtIsNullOrderByWorkoutDateDescCreatedAtDesc();
 
     Optional<WorkoutRecord> findByIdAndDeletedAtIsNull(Long id);
+
+    boolean existsByMuscleGroupAndStatusAndDeletedAtIsNull(MuscleGroup muscleGroup, WorkoutStatus status);
+
+    boolean existsByMuscleGroupAndStatusAndDeletedAtIsNullAndIdNot(MuscleGroup muscleGroup, WorkoutStatus status, Long id);
 }

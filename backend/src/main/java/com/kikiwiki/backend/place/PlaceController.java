@@ -21,8 +21,21 @@ public class PlaceController {
     }
 
     @GetMapping("/search")
-    public List<PlaceSearchResult> search(@RequestParam("query") String query) {
-        return kakaoPlaceSearchService.search(query);
+    public List<PlaceSearchResult> search(
+            @RequestParam("query") String query,
+            @RequestParam(value = "lat", required = false) Double lat,
+            @RequestParam(value = "lng", required = false) Double lng
+    ) {
+        return kakaoPlaceSearchService.search(query, lat, lng);
+    }
+
+    @GetMapping("/nearby")
+    public List<PlaceSearchResult> nearby(
+            @RequestParam("category") String category,
+            @RequestParam("lat") double lat,
+            @RequestParam("lng") double lng
+    ) {
+        return kakaoPlaceSearchService.searchNearby(category, lat, lng);
     }
 
     @PostMapping
@@ -37,7 +50,8 @@ public class PlaceController {
                 request.getStatus(),
                 request.getRating(),
                 request.getReview(),
-                request.getTags()
+                request.getTags(),
+                request.getVisitedAt()
         );
 
         Place saved = placeRepository.save(place);
@@ -68,7 +82,8 @@ public class PlaceController {
                 request.getStatus(),
                 request.getRating(),
                 request.getReview(),
-                request.getTags()
+                request.getTags(),
+                request.getVisitedAt()
         );
 
         Place updated = placeRepository.save(place);

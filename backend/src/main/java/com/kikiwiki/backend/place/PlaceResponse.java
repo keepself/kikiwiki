@@ -1,5 +1,6 @@
 package com.kikiwiki.backend.place;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -17,6 +18,7 @@ public class PlaceResponse {
     private String review;
     private List<String> tags;
     private LocalDateTime createdAt;
+    private LocalDate visitedAt;
 
     public PlaceResponse(Place place) {
         this.id = place.getId();
@@ -31,6 +33,7 @@ public class PlaceResponse {
         this.review = place.getReview();
         this.tags = place.getTags();
         this.createdAt = place.getCreatedAt();
+        this.visitedAt = place.getVisitedAt();
     }
 
     public Long getId() {
@@ -79,5 +82,9 @@ public class PlaceResponse {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public LocalDate getVisitedAt() {
+        return visitedAt;
     }
 }

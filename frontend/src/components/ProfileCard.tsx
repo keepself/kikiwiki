@@ -1,29 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 import type { Profile } from '../types/profile';
 
 interface Props {
   profile: Profile;
-  latestWeightKg: number | null;
   onPhotoSelect: (file: File) => void;
   onPhotoRemove: () => void;
-  onHeightSave: (heightCm: number | null) => void;
-  onOpenWeightModal: () => void;
+  onOpenMyRecords: () => void;
 }
 
-export function ProfileCard({
-  profile,
-  latestWeightKg,
-  onPhotoSelect,
-  onPhotoRemove,
-  onHeightSave,
-  onOpenWeightModal,
-}: Props) {
+export function ProfileCard({ profile, onPhotoSelect, onPhotoRemove, onOpenMyRecords }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [heightInput, setHeightInput] = useState(profile.heightCm != null ? String(profile.heightCm) : '');
-
-  useEffect(() => {
-    setHeightInput(profile.heightCm != null ? String(profile.heightCm) : '');
-  }, [profile.heightCm]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -31,15 +17,8 @@ export function ProfileCard({
     e.target.value = '';
   };
 
-  const handleHeightBlur = () => {
-    const num = heightInput ? Number(heightInput) : null;
-    if (num !== profile.heightCm) {
-      onHeightSave(num);
-    }
-  };
-
   return (
-    <div className="card section profile-card">
+    <div className="card section profile-card profile-card--mini">
       <div className="profile-card__photo-col">
         <div className="profile-card__photo-wrap">
           <button
@@ -68,31 +47,11 @@ export function ProfileCard({
         <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={handleFileChange} />
       </div>
 
-      <div className="profile-card__stats">
-        <div className="profile-card__stat">
-          <span className="profile-card__stat-label">키</span>
-          <div className="profile-card__height-field">
-            <input
-              type="number"
-              min={50}
-              max={250}
-              value={heightInput}
-              onChange={(e) => setHeightInput(e.target.value)}
-              onBlur={handleHeightBlur}
-              placeholder="예: 175"
-            />
-            <span className="profile-card__stat-unit">cm</span>
-          </div>
-        </div>
+      <span className="profile-card__name">{profile.username}</span>
 
-        <button type="button" className="profile-card__stat profile-card__stat--clickable" onClick={onOpenWeightModal}>
-          <span className="profile-card__stat-label">몸무게</span>
-          <span className="profile-card__stat-value">
-            {latestWeightKg != null ? `${latestWeightKg}kg` : '기록 없음'}
-          </span>
-          <span className="profile-card__stat-hint">기록 보기 ›</span>
-        </button>
-      </div>
+      <button type="button" className="profile-card__records-btn" onClick={onOpenMyRecords}>
+        내 기록 ›
+      </button>
     </div>
   );
 }

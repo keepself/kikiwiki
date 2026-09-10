@@ -108,4 +108,16 @@ public class TodoItemController {
 
         return new TodoItemResponse(restored);
     }
+
+    // 보관함에서 완전히 지우기 - 이미 소프트 삭제된(deletedAt이 있는) 항목이라 /{id}(위쪽)의
+    // findByIdAndDeletedAtIsNull로는 애초에 찾아지지 않으므로 별도 엔드포인트로 진짜(하드) 삭제함
+    @DeleteMapping("/{id}/permanent")
+    public ResponseEntity<Void> deletePermanently(@PathVariable("id") Long id) {
+        TodoItem item = todoItemRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "할 일을 찾을 수 없습니다: " + id));
+
+        todoItemRepository.delete(item);
+
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -26,13 +26,20 @@ public class WorkoutSet {
     @Column(nullable = false)
     private Integer reps;
 
+    // 이 세트가 AI 코칭으로 만들어졌을 때의 목표값 - 나중에 이 기록을 완료 처리할 때
+    // "지난 목표 대비 실제로 얼마나 했는지" 비교해서 보여주는 용도. 직접 만든 기록은 null
+    private BigDecimal targetWeightKg;
+    private Integer targetReps;
+
     protected WorkoutSet() {
     }
 
-    public WorkoutSet(Integer setOrder, BigDecimal weightKg, Integer reps) {
+    public WorkoutSet(Integer setOrder, BigDecimal weightKg, Integer reps, BigDecimal targetWeightKg, Integer targetReps) {
         this.setOrder = setOrder;
         this.weightKg = weightKg;
         this.reps = reps;
+        this.targetWeightKg = targetWeightKg;
+        this.targetReps = targetReps;
     }
 
     void assignTo(WorkoutExercise workoutExercise) {
@@ -53,5 +60,13 @@ public class WorkoutSet {
 
     public Integer getReps() {
         return reps;
+    }
+
+    public BigDecimal getTargetWeightKg() {
+        return targetWeightKg;
+    }
+
+    public Integer getTargetReps() {
+        return targetReps;
     }
 }

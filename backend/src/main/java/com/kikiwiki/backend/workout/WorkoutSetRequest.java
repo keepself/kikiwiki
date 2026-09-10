@@ -15,6 +15,10 @@ public class WorkoutSetRequest {
     @Min(value = 1, message = "횟수는 1 이상이어야 합니다.")
     private Integer reps;
 
+    // AI 코칭으로 만들어진 세트일 때만 값이 있음 - 직접 입력한 세트는 null 그대로 저장됨
+    private BigDecimal targetWeightKg;
+    private Integer targetReps;
+
     public BigDecimal getWeightKg() {
         return weightKg;
     }
@@ -29,5 +33,21 @@ public class WorkoutSetRequest {
 
     public void setReps(Integer reps) {
         this.reps = reps;
+    }
+
+    public BigDecimal getTargetWeightKg() {
+        return targetWeightKg;
+    }
+
+    public void setTargetWeightKg(BigDecimal targetWeightKg) {
+        this.targetWeightKg = targetWeightKg;
+    }
+
+    public Integer getTargetReps() {
+        return targetReps;
+    }
+
+    public void setTargetReps(Integer targetReps) {
+        this.targetReps = targetReps;
     }
 }

@@ -18,6 +18,7 @@ export interface Place {
   review: string | null;
   tags: string[];
   createdAt: string;
+  visitedAt: string | null;
 }
 
 export interface PlaceInput {
@@ -31,6 +32,7 @@ export interface PlaceInput {
   rating: number | null;
   review: string | null;
   tags: string[];
+  visitedAt: string | null;
 }
 
 export interface PlaceSearchResult {
@@ -38,6 +40,7 @@ export interface PlaceSearchResult {
   address: string;
   category: string;
   placeUrl: string;
+  phone: string;
   lat: number;
   lng: number;
 }

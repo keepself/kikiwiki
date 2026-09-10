@@ -54,7 +54,7 @@ interface Props {
 }
 
 const COLUMNS: { status: TodoStatus; label: string }[] = [
-  { status: 'TODO', label: '할 일' },
+  { status: 'TODO', label: '대기중' },
   { status: 'IN_PROGRESS', label: '진행 중' },
   { status: 'DONE', label: '완료' },
 ];
@@ -148,7 +148,7 @@ function BoardColumn({
       </div>
       {onAddClick && (
         <button type="button" className="board-column__add" onClick={onAddClick}>
-          + 카드 추가
+          + 작업 추가
         </button>
       )}
     </div>

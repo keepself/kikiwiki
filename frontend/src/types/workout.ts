@@ -19,9 +19,10 @@ export const MUSCLE_GROUP_EXERCISES: Record<MuscleGroup, string[]> = {
   SHOULDERS: ['오버헤드 프레스', '사이드 레터럴 레이즈', '프론트 레이즈', '리어 델트 플라이', '업라이트 로우', '아놀드 프레스', '페이스 풀'],
 };
 
-export type WorkoutStatus = 'COMPLETED' | 'INCOMPLETE' | 'INJURED' | 'SKIPPED';
+export type WorkoutStatus = 'PLANNED' | 'COMPLETED' | 'INCOMPLETE' | 'INJURED' | 'SKIPPED';
 
 export const WORKOUT_STATUS_LABELS: Record<WorkoutStatus, string> = {
+  PLANNED: '운동예정',
   COMPLETED: '완료',
   INCOMPLETE: '목표 미달',
   INJURED: '부상',
@@ -32,11 +33,15 @@ export interface WorkoutSet {
   id: number;
   weightKg: number | null;
   reps: number;
+  targetWeightKg: number | null;
+  targetReps: number | null;
 }
 
 export interface WorkoutSetInput {
   weightKg: number | null;
   reps: number;
+  targetWeightKg: number | null;
+  targetReps: number | null;
 }
 
 export interface WorkoutExercise {
@@ -80,6 +85,13 @@ export interface CoachingResult {
   configured: boolean;
   message: string | null;
   suggestion: CoachingSuggestion | null;
+}
+
+// 아직 회복 안 된(recoveredAt 없는) 부위별 부상 - "목표 운동" 위 배너에서 보여줌
+export interface MuscleInjury {
+  muscleGroup: MuscleGroup;
+  injuredAt: string;
+  sourceRecordId: number;
 }
 
 export interface ExercisePersonalRecord {

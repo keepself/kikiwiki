@@ -11,6 +11,7 @@ import {
   updateTodoItemStatus,
   fetchArchivedTodoItems,
   restoreTodoItem,
+  deleteArchivedTodoItem,
   fetchRoutineItems,
   createRoutineItem,
   updateRoutineItem,
@@ -139,6 +140,7 @@ export function SchedulePage() {
   const [editingTodoItem, setEditingTodoItem] = useState<TodoItem | null>(null);
   const [archivedTodoItems, setArchivedTodoItems] = useState<TodoItem[]>([]);
   const [showArchive, setShowArchive] = useState(false);
+  const [openArchiveMenuId, setOpenArchiveMenuId] = useState<number | null>(null);
 
   const loadTodoItems = () => {
     fetchTodoItems()
@@ -209,12 +211,26 @@ export function SchedulePage() {
   };
 
   // 진짜 삭제: 캘린더 일정에서 "할 일 보드에도 추가" 체크박스로 만들어진 카드면, 연결된 일정도 같이 지움
+  // (보드/편집 화면의 아직 살아있는 카드에서만 씀 - 이미 보관함에 있는 항목은 findByIdAndDeletedAtIsNull에
+  // 걸려서 이 API로는 지워지지 않음)
   const handleTodoDelete = async (id: number) => {
     if (!confirm('이 할 일을 삭제할까요? (연결된 캘린더 일정이 있다면 같이 삭제돼요)')) return;
     try {
       await deleteTodoItem(id, true);
       loadTodoItems();
       loadScheduleItems();
+      loadArchivedTodoItems();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '할 일 삭제 중 오류가 발생했습니다.');
+    }
+  };
+
+  // 보관함에 있는(이미 소프트 삭제된) 항목을 완전히 지움
+  const handleArchivedTodoDelete = async (id: number) => {
+    if (!confirm('이 항목을 보관함에서 완전히 삭제할까요? 복원할 수 없어요.')) return;
+    try {
+      await deleteArchivedTodoItem(id);
+      loadArchivedTodoItems();
     } catch (err) {
       setError(err instanceof Error ? err.message : '할 일 삭제 중 오류가 발생했습니다.');
     }
@@ -505,11 +521,11 @@ export function SchedulePage() {
 
           <div className="card section">
             <div className="card-header-row">
-              <h2 className="section-title">할 일 현황</h2>
+              <h2 className="section-title">작업 현황</h2>
             </div>
             <div className="summary-card__row">
               <div className="summary-card__stat summary-card__stat--neutral">
-                <div className="summary-card__stat-label">할 일</div>
+                <div className="summary-card__stat-label">대기중</div>
                 <div className="summary-card__stat-value tabular-nums">
                   {todoItems.filter((i) => i.status === 'TODO').length}
                 </div>
@@ -576,9 +592,40 @@ export function SchedulePage() {
                     <span className="purchased-row__date">
                       {item.deletedAt ? item.deletedAt.slice(0, 10) : ''}
                     </span>
-                    <button className="text-button" onClick={() => handleTodoRestore(item.id)}>
-                      복원
-                    </button>
+                    <div className="row-menu-wrap">
+                      <button
+                        className="row-menu-trigger"
+                        aria-label="메뉴"
+                        onClick={() => setOpenArchiveMenuId((cur) => (cur === item.id ? null : item.id))}
+                      >
+                        ⋯
+                      </button>
+                      {openArchiveMenuId === item.id && (
+                        <>
+                          <div className="menu-backdrop" onClick={() => setOpenArchiveMenuId(null)} />
+                          <div className="row-menu-popover">
+                            <button
+                              className="row-menu-item"
+                              onClick={() => {
+                                setOpenArchiveMenuId(null);
+                                handleTodoRestore(item.id);
+                              }}
+                            >
+                              복원
+                            </button>
+                            <button
+                              className="row-menu-item row-menu-item--danger"
+                              onClick={() => {
+                                setOpenArchiveMenuId(null);
+                                handleArchivedTodoDelete(item.id);
+                              }}
+                            >
+                              삭제
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -701,7 +748,7 @@ export function SchedulePage() {
       )}
 
       {editingTodoItem && (
-        <Modal title="할 일 수정" onClose={() => setEditingTodoItem(null)}>
+        <Modal title="작업 수정" onClose={() => setEditingTodoItem(null)}>
           <TodoItemForm
             submitLabel="수정하기"
             initialValues={{ title: editingTodoItem.title, memo: editingTodoItem.memo, dueDate: editingTodoItem.dueDate }}

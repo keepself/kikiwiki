@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import { TAB_ICONS, PAGE_LABELS } from './navItems';
 
@@ -11,6 +11,7 @@ interface Props {
   openTabs: OpenTab[];
   onTabClick: (path: string) => void;
   onCloseTab: (path: string) => void;
+  onReorderTab: (draggedPath: string, targetPath: string) => void;
   children: ReactNode;
 }
 
@@ -25,9 +26,13 @@ function LockIcon() {
 
 // 열린 탭이 하나도 없으면(전부 닫음) 새 창 자체를 렌더링하지 않음 - 상단바만 남고 나머지는 사라짐.
 // 신호등 점 옆에 탭이 붙어있는, 실제 브라우저 창 구조(창 컨트롤 + 탭 → 주소창 → 본문)를 흉내냄
-export function WindowFrame({ openTabs, onTabClick, onCloseTab, children }: Props) {
+export function WindowFrame({ openTabs, onTabClick, onCloseTab, onReorderTab, children }: Props) {
   const location = useLocation();
   const windowRef = useRef<HTMLDivElement>(null);
+
+  // 탭을 드래그해서 순서를 바꿀 수 있게 함 - 드래그 중인 탭과 지금 그 위에 올라온 탭을 표시용으로만 들고 있음
+  const [draggingPath, setDraggingPath] = useState<string | null>(null);
+  const [dragOverPath, setDragOverPath] = useState<string | null>(null);
 
   // 탭이 바뀔 때마다 팝인 애니메이션만 다시 재생 - key로 리마운트하면 안에 있는 실제 페이지까지
   // 같이 리마운트되어 스크롤 위치 등 상태가 날아가므로, 리플로우로 CSS 애니메이션만 재시작함
@@ -77,8 +82,28 @@ export function WindowFrame({ openTabs, onTabClick, onCloseTab, children }: Prop
             return (
               <button
                 key={tab.path}
-                className={`window__tab ${isActive ? 'window__tab--active' : ''}`}
+                className={`window__tab ${isActive ? 'window__tab--active' : ''} ${draggingPath === tab.path ? 'window__tab--dragging' : ''} ${dragOverPath === tab.path && draggingPath !== tab.path ? 'window__tab--drag-over' : ''}`}
                 onClick={() => onTabClick(tab.path)}
+                draggable
+                onDragStart={(e) => {
+                  setDraggingPath(tab.path);
+                  e.dataTransfer.effectAllowed = 'move';
+                }}
+                onDragEnd={() => {
+                  setDraggingPath(null);
+                  setDragOverPath(null);
+                }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  if (draggingPath && draggingPath !== tab.path) setDragOverPath(tab.path);
+                }}
+                onDragLeave={() => setDragOverPath((cur) => (cur === tab.path ? null : cur))}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  if (draggingPath && draggingPath !== tab.path) onReorderTab(draggingPath, tab.path);
+                  setDraggingPath(null);
+                  setDragOverPath(null);
+                }}
               >
                 <span className="window__tab-icon">
                   <Icon />

@@ -9,6 +9,8 @@ import type {
   CoachingResult,
   ExerciseHistoryResult,
   ExercisePersonalRecordSummary,
+  MuscleGroup,
+  MuscleInjury,
   WorkoutRecord,
   WorkoutRecordInput,
 } from '../types/workout';
@@ -478,6 +480,16 @@ export async function fetchArchivedTodoItems(): Promise<TodoItem[]> {
   return response.json();
 }
 
+export async function deleteArchivedTodoItem(id: number): Promise<void> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/todo-items/${id}/permanent`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error(`할 일 완전 삭제 실패: ${response.status}`);
+  }
+}
+
 export async function restoreTodoItem(id: number): Promise<TodoItem> {
   const response = await authorizedFetch(`${API_BASE_URL}/api/todo-items/${id}/restore`, {
     method: 'POST',
@@ -648,8 +660,9 @@ export async function deleteWorkoutRecord(id: number): Promise<void> {
   }
 }
 
-export async function fetchWorkoutCoaching(recordId: number): Promise<CoachingResult> {
-  const response = await authorizedFetch(`${API_BASE_URL}/api/workout-records/${recordId}/coaching`, {
+export async function fetchWorkoutCoaching(recordId: number, nextDate?: string): Promise<CoachingResult> {
+  const url = `${API_BASE_URL}/api/workout-records/${recordId}/coaching${nextDate ? `?nextDate=${nextDate}` : ''}`;
+  const response = await authorizedFetch(url, {
     method: 'POST',
   });
 
@@ -658,6 +671,26 @@ export async function fetchWorkoutCoaching(recordId: number): Promise<CoachingRe
   }
 
   return response.json();
+}
+
+export async function fetchActiveInjuries(): Promise<MuscleInjury[]> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/muscle-injuries`);
+
+  if (!response.ok) {
+    throw new Error(`부상 목록 조회 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function recoverMuscleInjury(muscleGroup: MuscleGroup): Promise<void> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/muscle-injuries/${muscleGroup}/recover`, {
+    method: 'POST',
+  });
+
+  if (!response.ok) {
+    throw new Error(`회복 처리 실패: ${response.status}`);
+  }
 }
 
 export async function fetchPersonalRecords(): Promise<ExercisePersonalRecordSummary[]> {
@@ -825,11 +858,26 @@ export async function deleteSavedItem(id: number): Promise<void> {
   }
 }
 
-export async function searchPlaces(query: string): Promise<PlaceSearchResult[]> {
-  const response = await authorizedFetch(`${API_BASE_URL}/api/places/search?query=${encodeURIComponent(query)}`);
+export async function searchPlaces(query: string, near?: { lat: number; lng: number }): Promise<PlaceSearchResult[]> {
+  let url = `${API_BASE_URL}/api/places/search?query=${encodeURIComponent(query)}`;
+  if (near) {
+    url += `&lat=${near.lat}&lng=${near.lng}`;
+  }
+  const response = await authorizedFetch(url);
 
   if (!response.ok) {
     throw new Error(`장소 검색 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function searchNearbyPlaces(category: string, lat: number, lng: number): Promise<PlaceSearchResult[]> {
+  const url = `${API_BASE_URL}/api/places/nearby?category=${encodeURIComponent(category)}&lat=${lat}&lng=${lng}`;
+  const response = await authorizedFetch(url);
+
+  if (!response.ok) {
+    throw new Error(`주변 탐색 실패: ${response.status}`);
   }
 
   return response.json();

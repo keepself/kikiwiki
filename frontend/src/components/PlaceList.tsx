@@ -8,11 +8,12 @@ interface Props {
   onDelete: (id: number) => Promise<void>;
   expandedId: number | null;
   onToggleExpand: (id: number) => void;
+  selectedTags?: Set<string>;
 }
 
 const PAGE_SIZE = 8;
 
-export function PlaceList({ places, onEdit, onDelete, expandedId, onToggleExpand }: Props) {
+export function PlaceList({ places, onEdit, onDelete, expandedId, onToggleExpand, selectedTags }: Props) {
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [page, setPage] = useState(1);
   const rowRefs = useRef<Map<number, HTMLDivElement>>(new Map());
@@ -73,14 +74,19 @@ export function PlaceList({ places, onEdit, onDelete, expandedId, onToggleExpand
                     )}
                     {place.category && <span className="tag-pill">{place.category}</span>}
                     {place.tags.map((tag) => (
-                      <span className="tag-pill" key={tag}>
+                      <span className={`tag-pill ${selectedTags?.has(tag) ? 'tag-pill--matched' : ''}`} key={tag}>
                         {tag}
                       </span>
                     ))}
                   </div>
                 </div>
 
-                <span className="item-date">{place.createdAt.slice(5, 10).replace('-', '/')}</span>
+                <span className="item-date">
+                  {(place.status === 'VISITED' && place.visitedAt ? place.visitedAt : place.createdAt)
+                    .slice(5, 10)
+                    .replace('-', '/')}
+                  {place.status === 'VISITED' && place.visitedAt && <span className="item-date__label">방문</span>}
+                </span>
 
                 <div className="row-menu-wrap" onClick={(e) => e.stopPropagation()}>
                   <button
