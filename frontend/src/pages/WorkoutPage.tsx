@@ -605,7 +605,7 @@ export function WorkoutPage() {
                 <button
                   type="button"
                   className="workout-tab-add"
-                  onClick={() => setTipFormValues({ type: 'LINK', title: '', url: null, content: null, tags: [WORKOUT_TIP_TAG] })}
+                  onClick={() => setTipFormValues({ type: 'LINK', title: '', url: null, content: null, imageUrl: null, tags: [WORKOUT_TIP_TAG] })}
                 >
                   + 추가
                 </button>
@@ -768,6 +768,7 @@ export function WorkoutPage() {
               title: editingTip.title,
               url: editingTip.url,
               content: editingTip.content,
+              imageUrl: editingTip.imageUrl,
               tags: editingTip.tags,
             }}
             onSubmit={async (input) => {

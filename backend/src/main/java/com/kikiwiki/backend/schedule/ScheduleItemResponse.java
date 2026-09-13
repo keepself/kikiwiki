@@ -2,6 +2,7 @@ package com.kikiwiki.backend.schedule;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 public class ScheduleItemResponse {
 
@@ -10,6 +11,7 @@ public class ScheduleItemResponse {
     private LocalDate startDate;
     private LocalDate endDate;
     private String memo;
+    private LocalTime eventTime;
     private Long routineId;
     private LocalDateTime createdAt;
 
@@ -19,6 +21,7 @@ public class ScheduleItemResponse {
         this.startDate = item.getStartDate();
         this.endDate = item.getEndDate();
         this.memo = item.getMemo();
+        this.eventTime = item.getEventTime();
         this.routineId = item.getRoutineId();
         this.createdAt = item.getCreatedAt();
     }
@@ -41,6 +44,10 @@ public class ScheduleItemResponse {
 
     public String getMemo() {
         return memo;
+    }
+
+    public LocalTime getEventTime() {
+        return eventTime;
     }
 
     public Long getRoutineId() {

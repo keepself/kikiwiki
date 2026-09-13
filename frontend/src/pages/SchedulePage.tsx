@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   fetchScheduleItems,
+  searchScheduleItems,
   createScheduleItem,
   updateScheduleItem,
   deleteScheduleItem,
@@ -83,6 +84,30 @@ export function SchedulePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [month]);
 
+  // 일정 검색 - 월 이동 없이 전체 기간에서 바로 찾음. 검색어가 있을 땐 "이번 달 일정" 목록 자리에
+  // 검색 결과를 대신 보여주고, 지우면 원래 이번 달 목록으로 돌아감
+  const [scheduleSearch, setScheduleSearch] = useState('');
+  const [scheduleSearchResults, setScheduleSearchResults] = useState<ScheduleItem[] | null>(null);
+  const [searchingSchedule, setSearchingSchedule] = useState(false);
+
+  useEffect(() => {
+    const query = scheduleSearch.trim();
+    if (!query) {
+      setScheduleSearchResults(null);
+      return;
+    }
+
+    setSearchingSchedule(true);
+    const timer = setTimeout(() => {
+      searchScheduleItems(query)
+        .then(setScheduleSearchResults)
+        .catch((err) => setError(err.message))
+        .finally(() => setSearchingSchedule(false));
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [scheduleSearch]);
+
   const handleScheduleCreate = async (input: ScheduleItemInput, addToBoard: boolean) => {
     try {
       const createdScheduleItem = await createScheduleItem(input);
@@ -132,7 +157,7 @@ export function SchedulePage() {
   // (캘린더 막대에는 그대로 나옴 - scheduleItems를 그대로 씀)
   const sortedScheduleItems = [...scheduleItems]
     .filter((item) => item.routineId == null)
-    .sort((a, b) => a.startDate.localeCompare(b.startDate));
+    .sort((a, b) => a.startDate.localeCompare(b.startDate) || (a.eventTime ?? '').localeCompare(b.eventTime ?? ''));
 
   // ---- 할 일 보드 (캘린더와 별개, 날짜 없이 상태로만 관리) ----
   const [todoItems, setTodoItems] = useState<TodoItem[]>([]);
@@ -274,9 +299,9 @@ export function SchedulePage() {
     }
   };
 
-  // 해지: 이 루틴에서 만들어졌던 캘린더 일정도 전부 같이 지워짐
+  // 해지: 오늘 이후로 이 루틴에서 만들어졌던 캘린더 일정이 같이 지워짐 (지난 일정은 이력으로 남음)
   const handleRoutineDelete = async (id: number) => {
-    if (!confirm('이 루틴을 해지할까요? (캘린더에 추가된 일정도 모두 같이 삭제돼요)')) return;
+    if (!confirm('이 루틴을 해지할까요? (오늘 이후 캘린더에 추가된 일정은 같이 삭제돼요. 지난 일정은 남아요)')) return;
     try {
       await deleteRoutineItem(id);
       loadRoutineItems();
@@ -316,6 +341,7 @@ export function SchedulePage() {
             {item.startDate === item.endDate
               ? item.startDate.slice(5).replace('-', '/')
               : `${item.startDate.slice(5).replace('-', '/')} ~ ${item.endDate.slice(5).replace('-', '/')}`}
+            {item.eventTime ? ` · ${item.eventTime.slice(0, 5)}` : ''}
             {item.memo ? ` · ${item.memo}` : ''}
           </span>
         </div>
@@ -364,6 +390,7 @@ export function SchedulePage() {
           <span className="recurring-row__name">{item.title}</span>
           <span className="recurring-row__category">
             매주 {formatDaysOfWeek(item.daysOfWeek)}
+            {item.eventTime ? ` · ${item.eventTime.slice(0, 5)}` : ''}
             {item.memo ? ` · ${item.memo}` : ''}
           </span>
         </div>
@@ -480,10 +507,25 @@ export function SchedulePage() {
         <div className="schedule-layout__right">
           <div className="card section">
             <div className="card-header-row">
-              <h2 className="section-title">이번 달 일정</h2>
+              <h2 className="section-title">{scheduleSearchResults ? '검색 결과' : '이번 달 일정'}</h2>
+              <input
+                type="text"
+                className="storage-search"
+                value={scheduleSearch}
+                onChange={(e) => setScheduleSearch(e.target.value)}
+                placeholder="일정 검색"
+              />
             </div>
 
-            {sortedScheduleItems.length === 0 ? (
+            {scheduleSearchResults ? (
+              searchingSchedule ? (
+                <div className="empty-state">검색 중...</div>
+              ) : scheduleSearchResults.length === 0 ? (
+                <div className="empty-state">"{scheduleSearch}"에 맞는 일정이 없어요.</div>
+              ) : (
+                <div className="schedule-list">{scheduleSearchResults.map(renderScheduleRow)}</div>
+              )
+            ) : sortedScheduleItems.length === 0 ? (
               <div className="empty-state">이 달엔 등록된 일정이 없어요.</div>
             ) : (
               <>
@@ -637,14 +679,22 @@ export function SchedulePage() {
       {dayDetail && (
         <Modal title={dayDetail.date} onClose={() => setDayDetail(null)}>
           <div className="schedule-list">
-            {dayDetail.items.map((item) => (
+            {[...dayDetail.items]
+              .sort((a, b) => (a.eventTime ?? '').localeCompare(b.eventTime ?? ''))
+              .map((item) => (
               <div className="schedule-list__row" key={item.id}>
                 <div className="recurring-row__info">
                   <span className="recurring-row__name">
                     <span className={`schedule-color-dot schedule-color-dot--${scheduleColorClass(item.id)}`} />
                     {item.title}
                   </span>
-                  {item.memo && <span className="recurring-row__category">{item.memo}</span>}
+                  {(item.eventTime || item.memo) && (
+                    <span className="recurring-row__category">
+                      {item.eventTime ? item.eventTime.slice(0, 5) : ''}
+                      {item.eventTime && item.memo ? ' · ' : ''}
+                      {item.memo ?? ''}
+                    </span>
+                  )}
                 </div>
                 <div className="row-menu-wrap">
                   <button
@@ -699,7 +749,7 @@ export function SchedulePage() {
       {showScheduleForm && (
         <Modal title="일정 추가" onClose={() => setShowScheduleForm(false)}>
           <ScheduleItemForm
-            initialValues={{ title: '', startDate: selectedDate, endDate: selectedDate, memo: null }}
+            initialValues={{ title: '', startDate: selectedDate, endDate: selectedDate, memo: null, eventTime: null }}
             onSubmit={async (input, addToBoard) => {
               await handleScheduleCreate(input, addToBoard);
               setShowScheduleForm(false);
@@ -717,6 +767,7 @@ export function SchedulePage() {
               startDate: editingScheduleItem.startDate,
               endDate: editingScheduleItem.endDate,
               memo: editingScheduleItem.memo,
+              eventTime: editingScheduleItem.eventTime,
             }}
             onSubmit={async (input, addToBoard) => {
               await handleScheduleUpdate(input, addToBoard);
@@ -798,6 +849,7 @@ export function SchedulePage() {
               title: editingRoutineItem.title,
               daysOfWeek: editingRoutineItem.daysOfWeek,
               memo: editingRoutineItem.memo,
+              eventTime: editingRoutineItem.eventTime,
             }}
             onSubmit={async (input) => {
               await handleRoutineUpdate(input);

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -27,6 +28,9 @@ public class RoutineItem {
 
     private String memo;
 
+    // 정해지면 이 루틴에서 만들어지는 모든 일정에 같은 시간이 붙음(예: 매일 아침 7시 운동)
+    private LocalTime eventTime;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -36,10 +40,11 @@ public class RoutineItem {
     protected RoutineItem() {
     }
 
-    public RoutineItem(String title, Set<DayOfWeek> daysOfWeek, String memo) {
+    public RoutineItem(String title, Set<DayOfWeek> daysOfWeek, String memo, LocalTime eventTime) {
         this.title = title;
         this.daysOfWeek = daysOfWeek.stream().map(d -> String.valueOf(d.getValue())).collect(Collectors.joining(","));
         this.memo = memo;
+        this.eventTime = eventTime;
     }
 
     @PrePersist
@@ -47,10 +52,11 @@ public class RoutineItem {
         this.createdAt = LocalDateTime.now();
     }
 
-    public void update(String title, Set<DayOfWeek> daysOfWeek, String memo) {
+    public void update(String title, Set<DayOfWeek> daysOfWeek, String memo, LocalTime eventTime) {
         this.title = title;
         this.daysOfWeek = daysOfWeek.stream().map(d -> String.valueOf(d.getValue())).collect(Collectors.joining(","));
         this.memo = memo;
+        this.eventTime = eventTime;
     }
 
     public void softDelete() {
@@ -77,6 +83,10 @@ public class RoutineItem {
 
     public String getMemo() {
         return memo;
+    }
+
+    public LocalTime getEventTime() {
+        return eventTime;
     }
 
     public LocalDateTime getCreatedAt() {

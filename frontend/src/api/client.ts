@@ -369,6 +369,16 @@ export async function fetchScheduleItems(month: string): Promise<ScheduleItem[]>
   return response.json();
 }
 
+export async function searchScheduleItems(query: string): Promise<ScheduleItem[]> {
+  const response = await authorizedFetch(`${API_BASE_URL}/api/schedule-items/search?q=${encodeURIComponent(query)}`);
+
+  if (!response.ok) {
+    throw new Error(`일정 검색 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
 export async function createScheduleItem(input: ScheduleItemInput): Promise<ScheduleItem> {
   const response = await authorizedFetch(`${API_BASE_URL}/api/schedule-items`, {
     method: 'POST',

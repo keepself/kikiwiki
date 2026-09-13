@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 // 하루짜리 일정은 startDate == endDate. 여행처럼 여러 날 이어지는 일정은 그 기간 전체를 담음
 @Entity
@@ -25,6 +26,9 @@ public class ScheduleItem {
 
     private String memo;
 
+    // 시간이 정해진 일정만 채움(예: 병원 예약 15:00) - 하루 종일/시간 무관 일정은 null
+    private LocalTime eventTime;
+
     // 고정 루틴에서 자동 생성된 항목이면 그 루틴의 id, 직접 등록한 일정이면 null
     private Long routineId;
 
@@ -37,15 +41,16 @@ public class ScheduleItem {
     protected ScheduleItem() {
     }
 
-    public ScheduleItem(String title, LocalDate startDate, LocalDate endDate, String memo) {
+    public ScheduleItem(String title, LocalDate startDate, LocalDate endDate, String memo, LocalTime eventTime) {
         this.title = title;
         this.startDate = startDate;
         this.endDate = endDate;
         this.memo = memo;
+        this.eventTime = eventTime;
     }
 
-    public ScheduleItem(String title, LocalDate startDate, LocalDate endDate, String memo, Long routineId) {
-        this(title, startDate, endDate, memo);
+    public ScheduleItem(String title, LocalDate startDate, LocalDate endDate, String memo, LocalTime eventTime, Long routineId) {
+        this(title, startDate, endDate, memo, eventTime);
         this.routineId = routineId;
     }
 
@@ -54,11 +59,12 @@ public class ScheduleItem {
         this.createdAt = LocalDateTime.now();
     }
 
-    public void update(String title, LocalDate startDate, LocalDate endDate, String memo) {
+    public void update(String title, LocalDate startDate, LocalDate endDate, String memo, LocalTime eventTime) {
         this.title = title;
         this.startDate = startDate;
         this.endDate = endDate;
         this.memo = memo;
+        this.eventTime = eventTime;
     }
 
     public void softDelete() {
@@ -83,6 +89,10 @@ public class ScheduleItem {
 
     public String getMemo() {
         return memo;
+    }
+
+    public LocalTime getEventTime() {
+        return eventTime;
     }
 
     public Long getRoutineId() {

@@ -113,7 +113,11 @@ public class DigestMailService {
         if (items.isEmpty()) return;
         sb.append(title).append("\n");
         for (ScheduleItem item : items) {
-            sb.append("- ").append(item.getTitle()).append("\n");
+            sb.append("- ");
+            if (item.getEventTime() != null) {
+                sb.append(item.getEventTime()).append(" ");
+            }
+            sb.append(item.getTitle()).append("\n");
         }
         sb.append("\n");
     }

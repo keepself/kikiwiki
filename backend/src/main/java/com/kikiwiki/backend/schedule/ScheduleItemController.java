@@ -38,7 +38,7 @@ public class ScheduleItemController {
                 if (scheduleItemRepository.existsByRoutineIdAndStartDate(routine.getId(), date)) continue;
 
                 try {
-                    scheduleItemRepository.save(new ScheduleItem(routine.getTitle(), date, date, routine.getMemo(), routine.getId()));
+                    scheduleItemRepository.save(new ScheduleItem(routine.getTitle(), date, date, routine.getMemo(), routine.getEventTime(), routine.getId()));
                 } catch (DataIntegrityViolationException e) {
                     // 동시에 들어온 다른 요청이 이미 같은 날짜를 만들었으면(유니크 제약 위반) 그냥 넘어감
                 }
@@ -56,7 +56,7 @@ public class ScheduleItemController {
     public ResponseEntity<ScheduleItemResponse> create(@Valid @RequestBody ScheduleItemRequest request) {
         validateDateRange(request);
 
-        ScheduleItem item = new ScheduleItem(request.getTitle(), request.getStartDate(), request.getEndDate(), request.getMemo());
+        ScheduleItem item = new ScheduleItem(request.getTitle(), request.getStartDate(), request.getEndDate(), request.getMemo(), request.getEventTime());
         ScheduleItem saved = scheduleItemRepository.save(item);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(new ScheduleItemResponse(saved));
@@ -77,6 +77,17 @@ public class ScheduleItemController {
                 .toList();
     }
 
+    // 월 구분 없이 제목/메모로 검색 - "몇 달 전 병원 예약이 언제였지" 같은 걸 월 넘기지 않고 바로 찾기 위함
+    @GetMapping("/search")
+    public List<ScheduleItemResponse> search(@RequestParam("q") String query) {
+        if (query.isBlank()) return List.of();
+
+        return scheduleItemRepository.search(query.trim())
+                .stream()
+                .map(ScheduleItemResponse::new)
+                .toList();
+    }
+
     private YearMonth parseYearMonthOrThrow(String month) {
         try {
             return YearMonth.parse(month);
@@ -92,7 +103,7 @@ public class ScheduleItemController {
         ScheduleItem item = scheduleItemRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "일정을 찾을 수 없습니다: " + id));
 
-        item.update(request.getTitle(), request.getStartDate(), request.getEndDate(), request.getMemo());
+        item.update(request.getTitle(), request.getStartDate(), request.getEndDate(), request.getMemo(), request.getEventTime());
         ScheduleItem updated = scheduleItemRepository.save(item);
 
         return new ScheduleItemResponse(updated);

@@ -21,6 +21,7 @@ export function RoutineItemForm({ initialValues, submitLabel, onSubmit }: Props)
   const isEditing = !!initialValues;
   const [title, setTitle] = useState(initialValues?.title ?? '');
   const [daysOfWeek, setDaysOfWeek] = useState<number[]>(initialValues?.daysOfWeek ?? []);
+  const [eventTime, setEventTime] = useState(initialValues?.eventTime ?? '');
   const [memo, setMemo] = useState(initialValues?.memo ?? '');
   const [submitting, setSubmitting] = useState(false);
 
@@ -42,11 +43,12 @@ export function RoutineItemForm({ initialValues, submitLabel, onSubmit }: Props)
 
     setSubmitting(true);
     try {
-      await onSubmit({ title, daysOfWeek, memo: memo || null });
+      await onSubmit({ title, daysOfWeek, memo: memo || null, eventTime: eventTime || null });
 
       if (!isEditing) {
         setTitle('');
         setDaysOfWeek([]);
+        setEventTime('');
         setMemo('');
       }
     } finally {
@@ -78,8 +80,13 @@ export function RoutineItemForm({ initialValues, submitLabel, onSubmit }: Props)
       </div>
 
       <div className="form-field">
+        <label>시간 (선택)</label>
+        <input type="time" value={eventTime} onChange={(e) => setEventTime(e.target.value)} />
+      </div>
+
+      <div className="form-field">
         <label>메모 (선택)</label>
-        <input value={memo} onChange={(e) => setMemo(e.target.value)} placeholder="예: 오후 7시" />
+        <input value={memo} onChange={(e) => setMemo(e.target.value)} placeholder="예: 3층 GX룸" />
       </div>
 
       <button type="submit" className="submit-button" disabled={submitting}>

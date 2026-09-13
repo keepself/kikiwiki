@@ -15,6 +15,7 @@ public class SavedItemRequest {
 
     private String url;
     private String content;
+    private String imageUrl;
     private List<String> tags;
 
     public SavedItemRequest() {
@@ -50,6 +51,14 @@ public class SavedItemRequest {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public List<String> getTags() {

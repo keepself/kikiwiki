@@ -27,6 +27,9 @@ public class SavedItem {
 
     private String content;
 
+    // 링크 종류일 때 미리보기 썸네일(Open Graph og:image) - 위시리스트의 링크 미리보기 기능을 그대로 재사용함
+    private String imageUrl;
+
     @JdbcTypeCode(SqlTypes.ARRAY)
     @Column(columnDefinition = "text[]", nullable = false)
     private List<String> tags = new ArrayList<>();
@@ -40,11 +43,12 @@ public class SavedItem {
     protected SavedItem() {
     }
 
-    public SavedItem(SavedItemType type, String title, String url, String content, List<String> tags) {
+    public SavedItem(SavedItemType type, String title, String url, String content, String imageUrl, List<String> tags) {
         this.type = type;
         this.title = title;
         this.url = url;
         this.content = content;
+        this.imageUrl = imageUrl;
         this.tags = tags != null ? tags : new ArrayList<>();
     }
 
@@ -53,11 +57,12 @@ public class SavedItem {
         this.createdAt = LocalDateTime.now();
     }
 
-    public void update(SavedItemType type, String title, String url, String content, List<String> tags) {
+    public void update(SavedItemType type, String title, String url, String content, String imageUrl, List<String> tags) {
         this.type = type;
         this.title = title;
         this.url = url;
         this.content = content;
+        this.imageUrl = imageUrl;
         this.tags = tags != null ? tags : new ArrayList<>();
     }
 
@@ -83,6 +88,10 @@ public class SavedItem {
 
     public String getContent() {
         return content;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
     }
 
     public List<String> getTags() {

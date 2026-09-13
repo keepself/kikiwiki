@@ -10,6 +10,7 @@ public class SavedItemResponse {
     private String title;
     private String url;
     private String content;
+    private String imageUrl;
     private List<String> tags;
     private LocalDateTime createdAt;
 
@@ -19,6 +20,7 @@ public class SavedItemResponse {
         this.title = item.getTitle();
         this.url = item.getUrl();
         this.content = item.getContent();
+        this.imageUrl = item.getImageUrl();
         this.tags = item.getTags();
         this.createdAt = item.getCreatedAt();
     }
@@ -41,6 +43,10 @@ public class SavedItemResponse {
 
     public String getContent() {
         return content;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
     }
 
     public List<String> getTags() {

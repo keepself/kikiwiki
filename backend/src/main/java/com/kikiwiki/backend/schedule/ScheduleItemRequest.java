@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 public class ScheduleItemRequest {
 
@@ -17,6 +18,8 @@ public class ScheduleItemRequest {
     private LocalDate endDate;
 
     private String memo;
+
+    private LocalTime eventTime;
 
     public String getTitle() {
         return title;
@@ -48,5 +51,13 @@ public class ScheduleItemRequest {
 
     public void setMemo(String memo) {
         this.memo = memo;
+    }
+
+    public LocalTime getEventTime() {
+        return eventTime;
+    }
+
+    public void setEventTime(LocalTime eventTime) {
+        this.eventTime = eventTime;
     }
 }

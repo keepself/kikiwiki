@@ -4,6 +4,7 @@ export interface ScheduleItem {
   startDate: string;
   endDate: string;
   memo: string | null;
+  eventTime: string | null;
   routineId: number | null;
   createdAt: string;
 }
@@ -13,4 +14,5 @@ export interface ScheduleItemInput {
   startDate: string;
   endDate: string;
   memo: string | null;
+  eventTime: string | null;
 }

@@ -11,6 +11,7 @@ export interface SavedItem {
   title: string;
   url: string | null;
   content: string | null;
+  imageUrl: string | null;
   tags: string[];
   createdAt: string;
 }
@@ -20,5 +21,6 @@ export interface SavedItemInput {
   title: string;
   url: string | null;
   content: string | null;
+  imageUrl: string | null;
   tags: string[];
 }

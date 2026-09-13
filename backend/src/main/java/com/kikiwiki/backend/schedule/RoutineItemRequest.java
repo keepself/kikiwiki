@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 
+import java.time.LocalTime;
 import java.util.Set;
 
 public class RoutineItemRequest {
@@ -16,6 +17,8 @@ public class RoutineItemRequest {
     private Set<@Min(value = 1, message = "요일 값은 1~7 사이여야 합니다.") @Max(value = 7, message = "요일 값은 1~7 사이여야 합니다.") Integer> daysOfWeek;
 
     private String memo;
+
+    private LocalTime eventTime;
 
     public String getTitle() {
         return title;
@@ -39,5 +42,13 @@ public class RoutineItemRequest {
 
     public void setMemo(String memo) {
         this.memo = memo;
+    }
+
+    public LocalTime getEventTime() {
+        return eventTime;
+    }
+
+    public void setEventTime(LocalTime eventTime) {
+        this.eventTime = eventTime;
     }
 }

@@ -7,7 +7,7 @@ import { SavedItemList } from '../components/SavedItemList';
 import { Modal } from '../components/Modal';
 
 function emptyFormValues(): SavedItemInput {
-  return { type: 'LINK', title: '', url: null, content: null, tags: [] };
+  return { type: 'LINK', title: '', url: null, content: null, imageUrl: null, tags: [] };
 }
 
 const TYPES: SavedItemType[] = ['LINK', 'NOTE'];
@@ -18,6 +18,7 @@ export function StoragePage() {
   const [editingItem, setEditingItem] = useState<SavedItem | null>(null);
   const [formValues, setFormValues] = useState<SavedItemInput | null>(null);
   const [filterType, setFilterType] = useState<SavedItemType | ''>('');
+  const [search, setSearch] = useState('');
 
   const loadItems = () => {
     fetchSavedItems()
@@ -57,7 +58,9 @@ export function StoragePage() {
     }
   };
 
-  const filteredItems = filterType ? items.filter((item) => item.type === filterType) : items;
+  const filteredItems = items
+    .filter((item) => (filterType ? item.type === filterType : true))
+    .filter((item) => item.title.toLowerCase().includes(search.trim().toLowerCase()));
 
   return (
     <div className="app">
@@ -66,6 +69,20 @@ export function StoragePage() {
       <div className="card section">
         <div className="card-header-row">
           <h2 className="section-title">정보 저장소</h2>
+          <div className="card-header-row__actions">
+            {items.length > 5 && (
+              <input
+                type="text"
+                className="storage-search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="검색"
+              />
+            )}
+            <button type="button" className="add-button" onClick={() => setFormValues(emptyFormValues())}>
+              + 추가
+            </button>
+          </div>
         </div>
 
         <div className="type-filter">
@@ -91,10 +108,6 @@ export function StoragePage() {
         <SavedItemList items={filteredItems} onEdit={setEditingItem} onDelete={handleDelete} />
       </div>
 
-      <button className="fab" onClick={() => setFormValues(emptyFormValues())} aria-label="저장 항목 추가">
-        +
-      </button>
-
       {formValues && (
         <Modal title="저장 항목 추가" onClose={() => setFormValues(null)}>
           <SavedItemForm
@@ -116,6 +129,7 @@ export function StoragePage() {
               title: editingItem.title,
               url: editingItem.url,
               content: editingItem.content,
+              imageUrl: editingItem.imageUrl,
               tags: editingItem.tags,
             }}
             onSubmit={async (input) => {

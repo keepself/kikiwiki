@@ -37,7 +37,7 @@ public class RoutineItemController {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 같은 이름의 루틴이 있습니다: " + request.getTitle());
         }
 
-        RoutineItem item = new RoutineItem(request.getTitle(), daysOfWeek, request.getMemo());
+        RoutineItem item = new RoutineItem(request.getTitle(), daysOfWeek, request.getMemo(), request.getEventTime());
         RoutineItem saved = routineItemRepository.save(item);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(new RoutineItemResponse(saved));
@@ -61,13 +61,14 @@ public class RoutineItemController {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 같은 이름의 루틴이 있습니다: " + request.getTitle());
         }
 
-        item.update(request.getTitle(), daysOfWeek, request.getMemo());
+        item.update(request.getTitle(), daysOfWeek, request.getMemo(), request.getEventTime());
         RoutineItem updated = routineItemRepository.save(item);
 
         return new RoutineItemResponse(updated);
     }
 
-    // 해지: 앞으로 새로 생성되는 것도 멈추고, 이 루틴에서 만들어졌던 캘린더 일정도 전부 같이 지움
+    // 해지: 앞으로 새로 생성되는 것도 멈추고, 오늘 이후(오늘 포함)로 이 루틴에서 만들어졌던 캘린더
+    // 일정도 같이 지움 - 지난 일정은 실제로 있었던 기록이라 해지해도 캘린더 이력엔 남겨둠
     // (여러 건을 지우는 작업이라 @Transactional로 묶어서, 중간에 실패하면 전부 롤백되게 함)
     @Transactional
     @DeleteMapping("/{id}")
@@ -75,7 +76,7 @@ public class RoutineItemController {
         RoutineItem item = routineItemRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "루틴을 찾을 수 없습니다: " + id));
 
-        for (ScheduleItem occurrence : scheduleItemRepository.findAllByRoutineIdAndDeletedAtIsNull(id)) {
+        for (ScheduleItem occurrence : scheduleItemRepository.findAllByRoutineIdAndDeletedAtIsNullAndStartDateGreaterThanEqual(id, java.time.LocalDate.now())) {
             occurrence.softDelete();
             scheduleItemRepository.save(occurrence);
         }

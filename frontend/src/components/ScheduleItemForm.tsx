@@ -12,6 +12,7 @@ export function ScheduleItemForm({ initialValues, submitLabel, onSubmit }: Props
   const [title, setTitle] = useState(initialValues?.title ?? '');
   const [startDate, setStartDate] = useState(initialValues?.startDate ?? '');
   const [endDate, setEndDate] = useState(initialValues?.endDate ?? initialValues?.startDate ?? '');
+  const [eventTime, setEventTime] = useState(initialValues?.eventTime ?? '');
   const [memo, setMemo] = useState(initialValues?.memo ?? '');
   const [addToBoard, setAddToBoard] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -42,11 +43,12 @@ export function ScheduleItemForm({ initialValues, submitLabel, onSubmit }: Props
 
     setSubmitting(true);
     try {
-      await onSubmit({ title, startDate, endDate, memo: memo || null }, addToBoard);
+      await onSubmit({ title, startDate, endDate, memo: memo || null, eventTime: eventTime || null }, addToBoard);
 
       if (!isEditing) {
         setTitle('');
         setMemo('');
+        setEventTime('');
         setAddToBoard(false);
       }
     } finally {
@@ -72,8 +74,13 @@ export function ScheduleItemForm({ initialValues, submitLabel, onSubmit }: Props
       </div>
 
       <div className="form-field">
+        <label>시간 (선택)</label>
+        <input type="time" value={eventTime} onChange={(e) => setEventTime(e.target.value)} />
+      </div>
+
+      <div className="form-field">
         <label>메모 (선택)</label>
-        <input type="text" value={memo} onChange={(e) => setMemo(e.target.value)} placeholder="예: 오후 3시" />
+        <input type="text" value={memo} onChange={(e) => setMemo(e.target.value)} placeholder="예: 2층 접수처" />
       </div>
 
       <label className="form-checkbox">

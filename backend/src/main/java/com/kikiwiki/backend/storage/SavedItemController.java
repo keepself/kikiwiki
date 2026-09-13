@@ -25,6 +25,7 @@ public class SavedItemController {
                 request.getTitle(),
                 request.getUrl(),
                 request.getContent(),
+                request.getImageUrl(),
                 request.getTags()
         );
 
@@ -51,6 +52,7 @@ public class SavedItemController {
                 request.getTitle(),
                 request.getUrl(),
                 request.getContent(),
+                request.getImageUrl(),
                 request.getTags()
         );
 
